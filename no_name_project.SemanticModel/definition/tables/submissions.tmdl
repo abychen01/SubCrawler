@@ -1,0 +1,111 @@
+table submissions
+	lineageTag: 0dc23a35-06fe-48ba-8c10-5a23bd377c80
+
+	column subreddit_name
+		dataType: string
+		lineageTag: baaf76a6-963e-4232-a1d2-a9deda2a9ca4
+		summarizeBy: none
+		sourceColumn: subreddit_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column key
+		dataType: string
+		lineageTag: 7b07364a-d7d3-4b02-9b9a-5ca34b6425ed
+		summarizeBy: none
+		sourceColumn: key
+
+		annotation SummarizationSetBy = Automatic
+
+	column post_title
+		dataType: string
+		lineageTag: e28d1150-992f-4807-a7ee-b8f56108ac46
+		summarizeBy: none
+		sourceColumn: post_title
+
+		annotation SummarizationSetBy = Automatic
+
+	column id
+		dataType: string
+		lineageTag: e88d158b-a1a4-4111-9c0b-2660993677b2
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column Comments
+		dataType: int64
+		formatString: 0
+		lineageTag: 96a20756-6265-4f6c-8d58-20bacac0d615
+		summarizeBy: sum
+		sourceColumn: Comments
+
+		annotation SummarizationSetBy = Automatic
+
+	column Self_text
+		dataType: string
+		lineageTag: bc5a37e4-8a25-4619-8c83-bf32739beb53
+		summarizeBy: none
+		sourceColumn: Self_text
+
+		annotation SummarizationSetBy = Automatic
+
+	column time_utc
+		dataType: string
+		lineageTag: 2f1f8c34-3321-4074-a9f9-6b3c1f308cd5
+		summarizeBy: none
+		sourceColumn: time_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	column upvote_ratio
+		dataType: double
+		lineageTag: 82b130c3-c826-4df9-a870-8a07499fe480
+		summarizeBy: sum
+		sourceColumn: upvote_ratio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column URL
+		dataType: string
+		lineageTag: 3f7e285c-1b48-4efb-87eb-b4e090d773e7
+		summarizeBy: none
+		sourceColumn: URL
+
+		annotation SummarizationSetBy = Automatic
+
+	column time_est
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: dea74f61-6e3d-47f1-b105-77e4bd5f85da
+		summarizeBy: none
+		sourceColumn: time_est
+
+		variation Variation
+			isDefault
+			relationship: 50ffa5f8-23ef-4f83-b064-a3fd1699c5ee
+			defaultHierarchy: LocalDateTable_7b47bf55-b43d-4540-a56a-9677a73c0dbc.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column title_sentiment
+		dataType: double
+		lineageTag: 41d34dc8-ef90-463c-803c-7fafb00c4dd1
+		summarizeBy: sum
+		sourceColumn: title_sentiment
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition submissions = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com", "no_name_project"),
+				    dbo_submissions = Source{[Schema="dbo",Item="submissions"]}[Data]
+				in
+				    dbo_submissions
+

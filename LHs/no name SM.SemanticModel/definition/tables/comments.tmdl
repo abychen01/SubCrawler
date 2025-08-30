@@ -1,0 +1,107 @@
+table comments
+	lineageTag: 7aa80d54-f45f-4ba8-aeef-29c09bbe02a1
+	sourceLineageTag: [dbo].[comments]
+
+	column submission_id
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: a0bbf385-c7a7-4b7a-9f43-dbf9f7e5b60c
+		sourceLineageTag: submission_id
+		summarizeBy: none
+		sourceColumn: submission_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column comment_id
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 6e013cc5-c5f8-48ff-b043-72ec2355cbc4
+		sourceLineageTag: comment_id
+		summarizeBy: none
+		sourceColumn: comment_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column keyword
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 1ad5bb93-6572-4f1f-8218-49356ca2ba02
+		sourceLineageTag: keyword
+		summarizeBy: none
+		sourceColumn: keyword
+
+		annotation SummarizationSetBy = Automatic
+
+	column comment_body
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 452a4941-2543-41f2-9131-47ad36b9d295
+		sourceLineageTag: comment_body
+		summarizeBy: none
+		sourceColumn: comment_body
+
+		annotation SummarizationSetBy = Automatic
+
+	column score
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 54b93bf0-6330-427e-97e2-65197dac7f4e
+		sourceLineageTag: score
+		summarizeBy: sum
+		sourceColumn: score
+
+		annotation SummarizationSetBy = Automatic
+
+	column time_utc
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: bbbe3b12-b227-42cc-92eb-a26d3aabbd4c
+		sourceLineageTag: time_utc
+		summarizeBy: none
+		sourceColumn: time_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	column URL
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: cfcac016-e826-4f6e-a1fa-161d477530b0
+		sourceLineageTag: URL
+		summarizeBy: none
+		sourceColumn: URL
+
+		annotation SummarizationSetBy = Automatic
+
+	column time_est
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 2465e27b-4bde-4d65-9a96-a47956f8179c
+		sourceLineageTag: time_est
+		summarizeBy: none
+		sourceColumn: time_est
+
+		annotation SummarizationSetBy = Automatic
+
+	column comment_sentiment
+		dataType: double
+		sourceProviderType: real
+		lineageTag: c28ca95b-38d2-4209-8134-d5b0b4d6525f
+		sourceLineageTag: comment_sentiment
+		summarizeBy: sum
+		sourceColumn: comment_sentiment
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition comments = entity
+		mode: directLake
+		source
+			entityName: comments
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,10 @@
+relationship 6d1cbfd9-83b6-45ae-9385-eca321a5229c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: comments.time_est
+	toColumn: LocalDateTable_1a55e9b7-8c05-42a8-84db-dbfacf67a117.Date
+
+relationship 50ffa5f8-23ef-4f83-b064-a3fd1699c5ee
+	joinOnDateBehavior: datePartOnly
+	fromColumn: submissions.time_est
+	toColumn: LocalDateTable_7b47bf55-b43d-4540-a56a-9677a73c0dbc.Date
+

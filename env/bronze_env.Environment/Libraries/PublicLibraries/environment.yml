@@ -1,0 +1,5 @@
+dependencies:
+  - pip:
+      - praw==7.8.1
+      - google-auth-oauthlib==1.2.2
+      - google-api-python-client==2.177.0
