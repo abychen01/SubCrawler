@@ -8,15 +8,12 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "4e947ca6-aebd-445c-b8b5-949389450fd0",
+# META       "default_lakehouse": "0bcf40e1-5936-4fdc-af5b-c02a4546065b",
 # META       "default_lakehouse_name": "Bronze_LH",
-# META       "default_lakehouse_workspace_id": "7e1d42ff-c288-4d0c-b15d-bf94da9da4b8",
+# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "426f53f6-c160-4a27-8dab-443ac08514a6"
-# META         },
-# META         {
-# META           "id": "4e947ca6-aebd-445c-b8b5-949389450fd0"
+# META           "id": "0bcf40e1-5936-4fdc-af5b-c02a4546065b"
 # META         }
 # META       ]
 # META     },
@@ -44,11 +41,13 @@ updates = ""
 
 # CELL ********************
 
+'''
 
 same_sub = True
 same_key = False
 updates = False
 
+'''
 
 # METADATA ********************
 

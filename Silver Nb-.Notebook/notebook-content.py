@@ -8,18 +8,15 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "dc9d3bc7-2078-4e0b-9d63-97f8b02c795b",
+# META       "default_lakehouse": "3561e974-6566-4287-a7a3-63458f55b871",
 # META       "default_lakehouse_name": "Silver_LH",
-# META       "default_lakehouse_workspace_id": "7e1d42ff-c288-4d0c-b15d-bf94da9da4b8",
+# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "426f53f6-c160-4a27-8dab-443ac08514a6"
+# META           "id": "3561e974-6566-4287-a7a3-63458f55b871"
 # META         },
 # META         {
-# META           "id": "4e947ca6-aebd-445c-b8b5-949389450fd0"
-# META         },
-# META         {
-# META           "id": "dc9d3bc7-2078-4e0b-9d63-97f8b02c795b"
+# META           "id": "0bcf40e1-5936-4fdc-af5b-c02a4546065b"
 # META         }
 # META       ]
 # META     }
@@ -33,18 +30,6 @@ b_comments_direct = ""
 b_comments_indirect = ""
 s_comments = ""
 s_submissions = ""
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-df = spark.sql("SELECT * FROM Bronze_LH.submissions LIMIT 1000")
-display(df)
 
 # METADATA ********************
 

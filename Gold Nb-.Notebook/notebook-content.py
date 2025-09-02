@@ -8,18 +8,15 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "426f53f6-c160-4a27-8dab-443ac08514a6",
+# META       "default_lakehouse": "9e211a6b-12cf-4545-82bb-64c49e7d785e",
 # META       "default_lakehouse_name": "Gold_LH",
-# META       "default_lakehouse_workspace_id": "7e1d42ff-c288-4d0c-b15d-bf94da9da4b8",
+# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "dc9d3bc7-2078-4e0b-9d63-97f8b02c795b"
+# META           "id": "3561e974-6566-4287-a7a3-63458f55b871"
 # META         },
 # META         {
-# META           "id": "4e947ca6-aebd-445c-b8b5-949389450fd0"
-# META         },
-# META         {
-# META           "id": "426f53f6-c160-4a27-8dab-443ac08514a6"
+# META           "id": "9e211a6b-12cf-4545-82bb-64c49e7d785e"
 # META         }
 # META       ]
 # META     },
@@ -56,15 +53,6 @@ from pyspark.sql.types import FloatType
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
-
-# MARKDOWN ********************
-
-# df_comments = spark.read.table("Silver_LH.comments")
-# df_submissions = spark.read.table("Silver_LH.submissions")
-
-# MARKDOWN ********************
-
-# pip install textblob
 
 # CELL ********************
 

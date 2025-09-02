@@ -8,12 +8,12 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "4e947ca6-aebd-445c-b8b5-949389450fd0",
+# META       "default_lakehouse": "0bcf40e1-5936-4fdc-af5b-c02a4546065b",
 # META       "default_lakehouse_name": "Bronze_LH",
-# META       "default_lakehouse_workspace_id": "7e1d42ff-c288-4d0c-b15d-bf94da9da4b8",
+# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "4e947ca6-aebd-445c-b8b5-949389450fd0"
+# META           "id": "0bcf40e1-5936-4fdc-af5b-c02a4546065b"
 # META         }
 # META       ]
 # META     },
@@ -28,6 +28,10 @@
 
 # %pip install google-auth-oauthlib google-api-python-client
 # pip install praw 
+
+# MARKDOWN ********************
+
+# Imports
 
 # CELL ********************
 
@@ -51,6 +55,10 @@ from google.oauth2 import service_account
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# MARKDOWN ********************
+
+# Schema def
 
 # CELL ********************
 
@@ -97,7 +105,7 @@ schema_comments = StructType([
 
 # CELL ********************
 
-df_reddit_creds = spark.read.format("delta").load("Files/reddit_creds")
+df_reddit_creds = spark.read.format("delta").load("Files/creds")
 df_reddit_creds = df_reddit_creds.collect()[0]
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -105,9 +113,9 @@ SERVICE_ACCOUNT_FILE = "/tmp/service_account_creds.json"
 DRIVE_FOLDER_ID = "1VNub-8hZYgBb7Jq4qlUZBUQ7h-dJWuty"  #  Drive folder ID
 
 reddit = praw.Reddit(
-    client_id = df_reddit_creds.client_id,
-    client_secret = df_reddit_creds.client_secret,
-    user_agent = df_reddit_creds.user_agent
+    client_id = df_reddit_creds.reddit_id,
+    client_secret = df_reddit_creds.reddit_secret,
+    user_agent = df_reddit_creds.reddit_user_agent
 )
 
 b_submissions = "Bronze_LH.submissions"
