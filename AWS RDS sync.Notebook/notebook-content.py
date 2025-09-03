@@ -8,12 +8,15 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "426f53f6-c160-4a27-8dab-443ac08514a6",
+# META       "default_lakehouse": "9e211a6b-12cf-4545-82bb-64c49e7d785e",
 # META       "default_lakehouse_name": "Gold_LH",
-# META       "default_lakehouse_workspace_id": "7e1d42ff-c288-4d0c-b15d-bf94da9da4b8",
+# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "426f53f6-c160-4a27-8dab-443ac08514a6"
+# META           "id": "0bcf40e1-5936-4fdc-af5b-c02a4546065b"
+# META         },
+# META         {
+# META           "id": "9e211a6b-12cf-4545-82bb-64c49e7d785e"
 # META         }
 # META       ]
 # META     }
@@ -33,24 +36,31 @@ import pyodbc
 
 # CELL ********************
 
-df2 = spark.read.option("header",True).csv("Files/creds")
+df2 = spark.read.parquet("Files/creds")
 password = df2.collect()[0]["password"]
 
 table_name = ["submissions","comments"]
 
-jdbc_url = "jdbc:sqlserver://fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com:\
-            1433;databaseName=no_name_project;encrypt=true;trustServerCertificate=true"
+db = "no_name_project"
+
+jdbc_url = "jdbc:sqlserver://myfreesqldbserver66.database.windows.net:1433;" \
+           f"databaseName={db};" \
+           "encrypt=true;" \
+           "trustServerCertificate=false;" \
+           "hostNameInCertificate=*.database.windows.net;" \
+           "loginTimeout=30;"
+
 jdbc_properties = {
-    "user": "admin",
+    "user": "admin2",
     "password": password,
     "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 }
 
 conn_str_master = (
             f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-            f"SERVER=fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com,1433;"
+            f"SERVER=tcp:myfreesqldbserver66.database.windows.net,1433;"
             f"DATABASE=master;"
-            f"UID=admin;"
+            f"UID=admin2;"
             f"PWD={password};"
             f"Encrypt=yes;"
             f"TrustServerCertificate=yes;"
@@ -59,9 +69,9 @@ conn_str_master = (
         
 conn_str = (
             f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-            f"SERVER=fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com,1433;"
-            f"DATABASE=no_name_project;"
-            f"UID=admin;"
+            f"SERVER=tcp:myfreesqldbserver66.database.windows.net,1433;"
+            f"DATABASE={db};"
+            f"UID=admin2;"
             f"PWD={password};"
             f"Encrypt=yes;"
             f"TrustServerCertificate=yes;"
