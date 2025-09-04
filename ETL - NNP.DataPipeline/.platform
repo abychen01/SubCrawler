@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "ETL - NNP"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "35d441a7-0b58-9955-487d-af0915850903"
+  }
+}

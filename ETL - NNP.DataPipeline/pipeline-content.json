@@ -1,0 +1,218 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "85c93ab2-54db-b1bd-426d-497977c9822b",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Bronze",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "cc00a149-c501-91e2-427b-3c44bb282a64",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "b_submissions": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).b_submissions",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "b_comments_direct": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).b_comments_direct",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "b_comments_indirect": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).b_comments_indirect",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "s_comments": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).s_comments",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "s_submissions": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).s_submissions",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Silver",
+        "dependsOn": [
+          {
+            "activity": "Bronze",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "d47cafda-d539-8127-4dc6-8dab0400d40f",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "s_comments": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).s_comments",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "s_submissions": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).s_submissions",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "g_comments": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).g_comments",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "g_submissions": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).g_submissions",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Gold",
+        "dependsOn": [
+          {
+            "activity": "Silver",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "a58b235f-cfa8-bdf8-4222-116bf24d4e89",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "AWS RDS sync",
+        "dependsOn": [
+          {
+            "activity": "Gold",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "b7294bf8-81c9-8cfc-4426-a06a9f9caf8a",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "b_submissions": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).b_submissions",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "b_comments_direct": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).b_comments_direct",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "same_sub": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).same_sub",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "same_key": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).same_key",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "updates": {
+              "value": {
+                "value": "@json(activity('Bronze').output.result.exitValue).updates",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Email",
+        "dependsOn": [
+          {
+            "activity": "AWS RDS sync",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
