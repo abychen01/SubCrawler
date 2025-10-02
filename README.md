@@ -1,6 +1,6 @@
 # SubCrawler Project
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/abychen01/currency_exchange_analysis)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/abychen01/SubCrawler)
 [![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![Spark Version](https://img.shields.io/badge/Spark-3.x-orange)](https://spark.apache.org/)
 
@@ -20,18 +20,18 @@ This project implements an ETL pipeline using Azure Synapse Analytics (or a simi
 - **Configurations**: 
   - `subreddits.csv` (from sheet): List of subreddits to search.  [link](https://docs.google.com/spreadsheets/d/12pCopaJID0R5iqkc0Lsb4pKmDYaOKlg_3WARdO0SxEM/edit?usp=sharing)
     
-    <img width="1000" alt="image" src="https://github.com/abychen01/no_name_project/blob/4555c283ce45b07640780f1b01fa315e6a2904a6/subreddits%20sheet.png" />
+    <img width="350" alt="image" src="https://github.com/abychen01/SubCrawler/blob/04c40219ff54a6261ef99001117868285669968e/subreddits%20sheet.png" />
   - `keywords.csv` (from sheet): List of keywords for filtering posts and comments.  [link](https://docs.google.com/spreadsheets/d/1mT0LXCjuUCIPrglGPMCpD9dWZ-tLn-aQ19z0xLb2mjU/edit?usp=sharing)
   
-    <img width="1000" alt="image" src="https://github.com/abychen01/no_name_project/blob/4555c283ce45b07640780f1b01fa315e6a2904a6/keywords%20sheet.png" />
+    <img width="350" alt="image" src="https://github.com/abychen01/SubCrawler/blob/04c40219ff54a6261ef99001117868285669968e/keywords%20sheet.png" />
   - `email.csv` (from sheet): Recipient email for notifications.   [link](https://docs.google.com/spreadsheets/d/1Z_Roi1VfweDt8VglA7tMI4qLgQj1KSD8rlMrDlJiPpU/edit?usp=sharing)
     
-    <img width="1000" alt="image" src="https://github.com/abychen01/no_name_project/blob/4555c283ce45b07640780f1b01fa315e6a2904a6/email%20sheet.png" />
+    <img width="350" alt="image" src="https://github.com/abychen01/SubCrawler/blob/04c40219ff54a6261ef99001117868285669968e/email%20sheet.png" />
 - **Processing**: Ingest raw data, clean/transform (e.g., deduplication, timestamps, URLs), add sentiment analysis using TextBlob.
 - **Storage**: Delta tables in lakehouses (Bronze, Silver, Gold layers).
 - **Sync**: Export to SQL Server database.
-- **Notifications**: Emails with summaries of new posts/comments and a Power BI link, sent on first run (when all three sheets are present) or updates.
-    <img width="1000" alt="image" src="https://github.com/abychen01/SubCrawler/blob/93285348bfcae09ac3cc6e62e1d7a53a54dfe255/email.png" />
+- **Notifications**: Emails with summaries of new posts/comments and a Power BI link, sent on first run or updates.
+      <img width="300" alt="image" src="https://github.com/abychen01/SubCrawler/blob/508d595ef4f5f5011e6bdbf72817dfbc5011f546/email.png" />
 - **Tools**: PySpark, PRAW, TextBlob, Google Drive API, pyodbc, Mailjet.
 
 The pipeline detects changes in sheets/CSVs and Reddit data for incremental processing. When all three sheets are added/updated, it performs a full search across all subreddits and keywords, sending an initial email. Subsequent runs check for new content and notify accordingly.
