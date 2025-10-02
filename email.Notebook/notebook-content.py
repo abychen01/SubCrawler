@@ -231,12 +231,12 @@ if same_sub == True and same_key == True and ((post_count + comment_count) > 0):
 
 	print ("same_sub == True and same_key == True and ((post_count + comment_count) > 0)")#testing
 
-	data['Messages'][0]['HTMLPart'] = f"<h3>Hello {df_email._c0},</h3><br/> \
-										New updates are available <br>\
-										New posts with keyword: {post_count} <br>\
-										New comments with keyword: {comment_count} <br>\
-										New posts:  <br> {post_list_html} <br>\
-										New comments: <br> {comments_list_html} <br>\
+	data['Messages'][0]['HTMLPart'] = f"<h3>Hello {df_email._c0},</h3><br/><br> \
+										New updates are available <br><br>\
+										New posts with keyword: {post_count} <br><br>\
+										New comments with keyword: {comment_count} <br><br>\
+										New posts:  <br> {post_list_html} <br><br>\
+										New comments: <br> {comments_list_html} <br><br>\
 										Follow the link to view the latest  \
 										<a href=\"https://www.google.com/\">Power BI report</a>"
 	result = mailjet.send.create(data=data)
@@ -249,10 +249,10 @@ else:
 		
 		print("latest_sub_ver == 0")#testing
 		
-		data['Messages'][0]['HTMLPart'] = f"<h3>Hello {df_email._c0},</h3><br/> \
-										First update <br>\
-										New posts:  <br> {post_list_html} <br>\
-										New comments: <br> {comments_list_html} <br>\
+		data['Messages'][0]['HTMLPart'] = f"<h3>Hello {df_email._c0},</h3><br/> <br>\
+										First update <br> <br>\
+										New posts:  <br> {post_list_html} <br> <br>\
+										New comments: <br> {comments_list_html} <br> <br>\
 										Follow the link to view the latest  \
 										<a href=\"https://www.google.com/\">Power BI report</a>"
 		

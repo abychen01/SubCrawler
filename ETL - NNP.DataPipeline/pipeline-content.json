@@ -133,7 +133,7 @@
       {
         "type": "TridentNotebook",
         "typeProperties": {
-          "notebookId": "a58b235f-cfa8-bdf8-4222-116bf24d4e89",
+          "notebookId": "2f3f8294-67c6-a1cb-4aa8-d513cf611fe9",
           "workspaceId": "00000000-0000-0000-0000-000000000000"
         },
         "policy": {
@@ -143,7 +143,7 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "AWS RDS sync",
+        "name": "SQL Server sync",
         "dependsOn": [
           {
             "activity": "Gold",
@@ -206,7 +206,7 @@
         "name": "Email",
         "dependsOn": [
           {
-            "activity": "AWS RDS sync",
+            "activity": "SQL Server sync",
             "dependencyConditions": [
               "Succeeded"
             ]

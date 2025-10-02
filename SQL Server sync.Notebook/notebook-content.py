@@ -41,7 +41,7 @@ password = df2.collect()[0]["password"]
 
 table_name = ["submissions","comments"]
 
-db = "no_name_project"
+db = "subcrawler"
 
 jdbc_url = "jdbc:sqlserver://myfreesqldbserver66.database.windows.net:1433;" \
            f"databaseName={db};" \
@@ -112,14 +112,13 @@ def converts(spark_type):
 with pyodbc.connect(conn_str_master, autocommit=True) as conn:
     with conn.cursor() as cursor:
         cursor.execute("""
-            if not exists(select name from sys.databases where name = 'no_name_project')
+            if not exists(select name from sys.databases where name = 'subcrawler')
             begin
-            create database no_name_project
-            SELECT 'Database no_name_project created.' 
+            SELECT 'Database subcrawler doesn't exist.' 
             end
             else
             begin
-            SELECT 'Database no_name_project already exists.'
+            SELECT 'Database subcrawler already exists.'
             end
         """)
         result = cursor.fetchone()
