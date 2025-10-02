@@ -31,7 +31,7 @@ This project implements an ETL pipeline using Azure Synapse Analytics (or a simi
 - **Storage**: Delta tables in lakehouses (Bronze, Silver, Gold layers).
 - **Sync**: Export to SQL Server database.
 - **Notifications**: Emails with summaries of new posts/comments and a Power BI link, sent on first run (when all three sheets are present) or updates.
-    <img width="1000" alt="image" src="https://github.com/abychen01/no_name_project/blob/4555c283ce45b07640780f1b01fa315e6a2904a6/email%20sheet.png" />
+    <img width="1000" alt="image" src="https://github.com/abychen01/SubCrawler/blob/93285348bfcae09ac3cc6e62e1d7a53a54dfe255/email.png" />
 - **Tools**: PySpark, PRAW, TextBlob, Google Drive API, pyodbc, Mailjet.
 
 The pipeline detects changes in sheets/CSVs and Reddit data for incremental processing. When all three sheets are added/updated, it performs a full search across all subreddits and keywords, sending an initial email. Subsequent runs check for new content and notify accordingly.
