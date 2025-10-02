@@ -114,7 +114,7 @@ with pyodbc.connect(conn_str_master, autocommit=True) as conn:
         cursor.execute("""
             if not exists(select name from sys.databases where name = 'subcrawler')
             begin
-            SELECT 'Database subcrawler doesn't exist.' 
+            SELECT 'Database subcrawler doesnt exist.' 
             end
             else
             begin
