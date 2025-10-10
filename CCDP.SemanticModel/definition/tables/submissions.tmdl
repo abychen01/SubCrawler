@@ -81,7 +81,7 @@ table submissions
 		formatString: 0
 		lineageTag: 24bafd54-a956-450d-bdc3-c67004df53e5
 
-	measure test = [s_total_count] / [total_count]
+	measure test = DIVIDE([total_count], [s_total_count])
 		lineageTag: d9fa46dd-a7cb-441d-ba68-792ce4806505
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}

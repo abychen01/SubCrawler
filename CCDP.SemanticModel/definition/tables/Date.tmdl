@@ -90,8 +90,6 @@ table Date
 				in
 				  #"Reordered columns"
 
-	changedProperty = Name
-
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table

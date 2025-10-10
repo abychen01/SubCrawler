@@ -148,14 +148,17 @@ table comments
 		annotation SummarizationSetBy = Automatic
 
 	column comment_sentiment
-		dataType: double
+		dataType: decimal
+		formatString: "£"#,0.00;-"£"#,0.00;"£"#,0.00
 		lineageTag: f326491f-d017-4824-985b-867a22af655b
 		summarizeBy: sum
 		sourceColumn: comment_sentiment
 
+		changedProperty = DataType
+
 		annotation SummarizationSetBy = Automatic
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation PBI_FormatHint = {"currencyCulture":"en-GB"}
 
 	partition comments = m
 		mode: import
