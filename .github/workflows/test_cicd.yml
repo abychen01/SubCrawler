@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   validate-and-deploy:
-    runs-on: windows-latest   # Tabular Editor requires Windows
+    runs-on: windows-latest   # Tabular Editor CLI requires Windows
 
     steps:
       - name: Checkout repository
@@ -57,23 +57,24 @@ jobs:
         run: |
           Write-Host "🔍 Running Best Practice Analyzer..."
           $ModelPath = "CCDP.SemanticModel/definition/model.tmdl"
-          if (-Not (Test-Path $ModelPath)) {
-              Write-Error "❌ model.tmdl not found at $ModelPath"
-              exit 1
-          }
-
           $RulesPath = "BPARules.json"
-          if (-Not (Test-Path $RulesPath)) {
-              Write-Error "❌ BPA rules file not found!"
-              exit 1
-          }
-
           $TEPath = "TabularEditor/TabularEditor.exe"
-          Write-Host "🧠 Executing BPA via $TEPath..."
-          & $TEPath -BPA $ModelPath -Rules $RulesPath -ExportResults "bpa-results.json" -IgnoreWarnings -Format JSON
+          $ExportPath = Join-Path (Get-Location) "bpa-results.json"
 
-          Write-Host "📊 BPA results exported to bpa-results.json"
-          $results = Get-Content "bpa-results.json" | ConvertFrom-Json
+          Write-Host "Working directory: $(Get-Location)"
+          Write-Host "Model path: $ModelPath"
+          Write-Host "Rules path: $RulesPath"
+          Write-Host "Export path: $ExportPath"
+
+          if (-Not (Test-Path $ModelPath)) { Write-Error "❌ model.tmdl not found at $ModelPath"; exit 1 }
+          if (-Not (Test-Path $RulesPath)) { Write-Error "❌ BPARules.json not found at $RulesPath"; exit 1 }
+
+          Write-Host "🧠 Executing BPA via $TEPath..."
+          & $TEPath -BPA $ModelPath -Rules $RulesPath -ExportResults $ExportPath -IgnoreWarnings -Format JSON
+
+          if (-Not (Test-Path $ExportPath)) { Write-Error "❌ BPA export file not created"; exit 1 }
+
+          $results = Get-Content $ExportPath | ConvertFrom-Json
           $violations = $results | Where-Object { $_.Severity -eq "Error" -or $_.Severity -eq "Warning" }
 
           if ($violations.Count -gt 0) {
