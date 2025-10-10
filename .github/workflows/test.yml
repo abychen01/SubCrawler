@@ -72,7 +72,7 @@ jobs:
       - name: Run Tabular Editor and the BPA against your semantic model
        # Execute the BPA using command-line arguments
         run: |
-          ./TabularEditor.exe "CCDP.SemanticModel/definition/database.tmdl" -A "BPA_Rule.json" `
+          ./TabularEditor.exe "CCDP.SemanticModel/definition/database.tmdl" -A "BPARules.json" `
           | Tee-Object -FilePath "./BPA_output.txt" 
           
       - name: Upload BPA result into a .txt file
