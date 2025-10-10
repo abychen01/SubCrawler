@@ -117,12 +117,12 @@
           "z": 0.00
         },
         {
-          "config": "{\"name\":\"fde469c4d1010d16bd10\",\"layouts\":[{\"id\":0,\"position\":{\"x\":450.59961315280464,\"y\":222.82398452611218,\"z\":6000,\"width\":214.1586073500967,\"height\":137.4081237911025,\"tabOrder\":6000}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"comments.keyword\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"comments\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"keyword\"},\"Name\":\"comments.keyword\",\"NativeReferenceName\":\"keyword\"}]},\"drillFilterOtherVisuals\":true,\"hasDefaultSort\":true,\"objects\":{}}}",
+          "config": "{\"name\":\"fde469c4d1010d16bd10\",\"layouts\":[{\"id\":0,\"position\":{\"x\":921.0058027079303,\"y\":583.0560928433268,\"z\":6000,\"width\":214.1586073500967,\"height\":137.4081237911025,\"tabOrder\":6000}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"comments.keyword\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"comments\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"keyword\"},\"Name\":\"comments.keyword\",\"NativeReferenceName\":\"keyword\"}]},\"drillFilterOtherVisuals\":true,\"hasDefaultSort\":true,\"objects\":{}}}",
           "filters": "[{\"name\":\"feccd2634800c4156bee\",\"expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Entity\":\"comments\"}},\"Property\":\"keyword\"}},\"filter\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"comments\",\"Type\":0}],\"Where\":[{\"Condition\":{\"In\":{\"Expressions\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"keyword\"}}],\"Values\":[[{\"Literal\":{\"Value\":\"'test for indirect comment'\"}}]]}}}]},\"type\":\"Categorical\",\"howCreated\":0,\"objects\":{},\"isHiddenInViewMode\":false},{\"name\":\"a9a263c058e7c1448546\",\"expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Entity\":\"comments\"}},\"Property\":\"last24h_flag\"}},\"type\":\"Advanced\",\"howCreated\":1}]",
           "height": 137.41,
           "width": 214.16,
-          "x": 450.60,
-          "y": 222.82,
+          "x": 921.01,
+          "y": 583.06,
           "z": 6000.00
         }
       ],
