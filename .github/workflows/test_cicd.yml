@@ -56,11 +56,9 @@ jobs:
           WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
           FABRIC_TOKEN: ${{ env.FABRIC_TOKEN }}
         run: |
-          echo "Zipping PBIP and related folders..."
-          zip -r pbip_package.zip CCDP.pbip CCDP.Report CCDP.SemanticModel
           echo "Publishing .pbip file to Fabric..."
           curl -X POST \
             "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/files" \
             -H "Authorization: Bearer $FABRIC_TOKEN" \
-            -F "file=@pbip_package.zip" \
+            -F "file=@CCDP.pbip" \
             -F "overwrite=true"
