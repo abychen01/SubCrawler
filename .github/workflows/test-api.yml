@@ -26,7 +26,7 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
         allow-no-subscriptions: true
-        auth-type: service-principal
+        auth-type: SERVICE_PRINCIPAL  # Fixed to uppercase with underscores
 
     - name: Debug Azure CLI Environment
       run: |
@@ -74,7 +74,7 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
         allow-no-subscriptions: true
-        auth-type: service-principal
+        auth-type: SERVICE_PRINCIPAL  # Fixed to uppercase with underscores
 
     - name: Debug Azure CLI Environment
       run: |
@@ -91,7 +91,7 @@ jobs:
 
     - name: Sync Prod Workspace from Git
       env:
-        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}  # Use DEV_WORKSPACE_ID for now
+        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}  # Using DEV_WORKSPACE_ID for now
         BRANCH: main
       run: |
         STATUS_RESPONSE=$(curl -X GET \
