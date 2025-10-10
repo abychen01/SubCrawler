@@ -59,12 +59,12 @@ jobs:
 
       - name: Publish PBIP to Fabric Workspace
         env:
-          WORKSPACE_ID: ${{ vars.FABRIC_WORKSPACE_ID }}
+          WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
           FABRIC_TOKEN: ${{ env.FABRIC_TOKEN }}
         run: |
           echo "🚀 Publishing CCDP.pbip to Fabric workspace $WORKSPACE_ID..."
           curl -X POST \
-            "${{ env.FABRIC_API_URL }}/v1/workspaces/$DEV_WORKSPACE_ID/files" \
+            "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/files" \
             -H "Authorization: Bearer $FABRIC_TOKEN" \
             -F "file=@CCDP.pbip" \
             -F "overwrite=true" \
