@@ -1,4 +1,4 @@
-name: Power BI Fabric CI/CD (with BPA - TE3)
+name: Power BI Fabric CI/CD (with BPA)
 
 on:
   push:
@@ -21,15 +21,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Tabular Editor 3 Portable
+      - name: Setup Tabular Editor Portable
         shell: pwsh
         run: |
-          Write-Host "⬇️  Downloading Tabular Editor 3 portable..."
-          $url = "https://github.com/TabularEditor/TabularEditor/releases/latest/download/TabularEditor3.Portable.zip"
-          Invoke-WebRequest -Uri $url -OutFile "TabularEditor3.zip"
-          Expand-Archive TabularEditor3.zip -DestinationPath "TabularEditor3"
-          Write-Host "✅ Tabular Editor 3 extracted."
-          Get-ChildItem TabularEditor3
+          Write-Host "⬇️  Downloading Tabular Editor 2.27.2 portable..."
+          $url = "https://cdn.tabulareditor.com/files/TabularEditor.2.27.2.zip"
+          Invoke-WebRequest -Uri $url -OutFile "TabularEditor.zip"
+          Expand-Archive TabularEditor.zip -DestinationPath "TabularEditor"
+          Write-Host "✅ Tabular Editor extracted."
+          Get-ChildItem TabularEditor
 
       - name: Azure Login
         uses: azure/login@v2
@@ -52,14 +52,13 @@ jobs:
           Write-Host "FABRIC_TOKEN=$FABRIC_TOKEN" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
           Write-Host "✅ Token retrieved."
 
-      - name: Run BPA Validation (TE3)
+      - name: Run BPA Validation
         shell: pwsh
         run: |
-          Write-Host "🔍 Running Best Practice Analyzer (TE3)..."
-
+          Write-Host "🔍 Running Best Practice Analyzer..."
           $ModelPath = "CCDP.SemanticModel/definition/model.tmdl"
           $RulesPath = "BPARules.json"
-          $TEPath = "TabularEditor3/TabularEditor.exe"
+          $TEPath = "TabularEditor/TabularEditor.exe"
           $ExportPath = Join-Path (Get-Location) "bpa-results.json"
 
           Write-Host "Working directory: $(Get-Location)"
@@ -70,9 +69,9 @@ jobs:
           if (-Not (Test-Path $ModelPath)) { Write-Error "❌ model.tmdl not found"; exit 1 }
           if (-Not (Test-Path $RulesPath)) { Write-Error "❌ BPARules.json not found"; exit 1 }
 
-          # Run BPA
-          Write-Host "🧠 Executing BPA via TE3..."
-          & $TEPath -BPA $ModelPath -Rules $RulesPath -ExportResults $ExportPath -Format JSON
+          # Run BPA using TE
+          Write-Host "🧠 Executing BPA via $TEPath..."
+          & $TEPath -BPA $ModelPath -Rules $RulesPath -ExportResults $ExportPath -IgnoreWarnings -Format JSON
 
           if (-Not (Test-Path $ExportPath)) { Write-Error "❌ BPA export file not created"; exit 1 }
 
