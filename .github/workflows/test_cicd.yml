@@ -62,7 +62,7 @@ jobs:
               exit 1
           }
 
-          $RulesPath = "bpa-rules.json"
+          $RulesPath = "BPARules.json"
           if (-Not (Test-Path $RulesPath)) {
               Write-Error "❌ BPA rules file not found!"
               exit 1
