@@ -13,8 +13,7 @@ jobs:
   deploy-dev-test:
     if: github.ref == 'refs/heads/develop'
     permissions:
-      id-token: write  # Added to enable OIDC token
-      contents: read   # Required for checkout
+      contents: read
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -26,7 +25,15 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        allow-no-subscriptions: true  # Bypass subscription requirement for Fabric API
+        allow-no-subscriptions: true
+        auth-type: service-principal
+
+    - name: Debug Azure CLI Environment
+      run: |
+        az --version
+        az account list --output table
+        echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
+        echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
 
     - name: Get Fabric Access Token
       id: token
@@ -36,7 +43,7 @@ jobs:
 
     - name: Sync Test Workspace from Git
       env:
-        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}  # Use dev for testing
+        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
         BRANCH: develop
       run: |
         STATUS_RESPONSE=$(curl -X GET \
@@ -54,8 +61,7 @@ jobs:
   deploy-prod:
     if: github.ref == 'refs/heads/main'
     permissions:
-      id-token: write  # Added to enable OIDC token
-      contents: read   # Required for checkout
+      contents: read
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -67,7 +73,15 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        allow-no-subscriptions: true  # Bypass subscription requirement for Fabric API
+        allow-no-subscriptions: true
+        auth-type: service-principal
+
+    - name: Debug Azure CLI Environment
+      run: |
+        az --version
+        az account list --output table
+        echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
+        echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
 
     - name: Get Fabric Access Token
       id: token
@@ -77,7 +91,7 @@ jobs:
 
     - name: Sync Prod Workspace from Git
       env:
-        WORKSPACE_ID: ${{ vars.PROD_WORKSPACE_ID }}  # Add this variable later for prod
+        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}  # Use DEV_WORKSPACE_ID for now
         BRANCH: main
       run: |
         STATUS_RESPONSE=$(curl -X GET \
