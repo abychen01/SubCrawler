@@ -10,98 +10,55 @@ env:
   FABRIC_API_URL: https://api.fabric.microsoft.com
 
 jobs:
-  deploy-dev-test:
-    if: github.ref == 'refs/heads/develop'
+  deploy:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    runs-on: ubuntu-latest
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Authenticate to Azure
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        allow-no-subscriptions: true
-        auth-type: SERVICE_PRINCIPAL  # Fixed to uppercase with underscores
+      - name: Authenticate to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          allow-no-subscriptions: true
+          auth-type: SERVICE_PRINCIPAL
 
-    - name: Debug Azure CLI Environment
-      run: |
-        az --version
-        az account list --output table
-        echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
-        echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
+      - name: Debug Azure CLI Environment
+        run: |
+          az --version
+          az account show
 
-    - name: Get Fabric Access Token
-      id: token
-      run: |
-        token=$(az account get-access-token --resource ${{ env.FABRIC_API_URL }} --query accessToken -o tsv)
-        echo "FABRIC_TOKEN=$token" >> $GITHUB_ENV
+      - name: Get Fabric Access Token
+        id: token
+        run: |
+          echo "Getting Fabric token..."
+          FABRIC_TOKEN=$(az account get-access-token --resource "${{ env.FABRIC_API_URL }}" --query accessToken -o tsv)
+          echo "FABRIC_TOKEN=$FABRIC_TOKEN" >> $GITHUB_ENV
+          echo "Token fetched successfully."
 
-    - name: Sync Test Workspace from Git
-      env:
-        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
-        BRANCH: develop
-      run: |
-        STATUS_RESPONSE=$(curl -X GET \
-          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/status" \
-          -H "Authorization: Bearer $FABRIC_TOKEN" \
-          -H "Content-Type: application/json")
-        echo "Status: $STATUS_RESPONSE"
-        UPDATE_RESPONSE=$(curl -X POST \
-          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/update" \
-          -H "Authorization: Bearer $FABRIC_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d "{\"commitId\": null, \"resolveConflicts\": \"Repository\"}")
-        echo "Update: $UPDATE_RESPONSE"
+      - name: Test Workspace Git Connection
+        env:
+          WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
+        run: |
+          echo "Checking workspace Git status..."
+          STATUS_RESPONSE=$(curl -s -w "\n%{http_code}" -X GET \
+            "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/status" \
+            -H "Authorization: Bearer $FABRIC_TOKEN" \
+            -H "Content-Type: application/json")
+          echo "$STATUS_RESPONSE"
 
-  deploy-prod:
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-
-    - name: Authenticate to Azure
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        allow-no-subscriptions: true
-        auth-type: SERVICE_PRINCIPAL  # Fixed to uppercase with underscores
-
-    - name: Debug Azure CLI Environment
-      run: |
-        az --version
-        az account list --output table
-        echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
-        echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
-
-    - name: Get Fabric Access Token
-      id: token
-      run: |
-        token=$(az account get-access-token --resource ${{ env.FABRIC_API_URL }} --query accessToken -o tsv)
-        echo "FABRIC_TOKEN=$token" >> $GITHUB_ENV
-
-    - name: Sync Prod Workspace from Git
-      env:
-        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}  # Using DEV_WORKSPACE_ID for now
-        BRANCH: main
-      run: |
-        STATUS_RESPONSE=$(curl -X GET \
-          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/status" \
-          -H "Authorization: Bearer $FABRIC_TOKEN" \
-          -H "Content-Type: application/json")
-        echo "Status: $STATUS_RESPONSE"
-        UPDATE_RESPONSE=$(curl -X POST \
-          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/update" \
-          -H "Authorization: Bearer $FABRIC_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d "{\"commitId\": null, \"resolveConflicts\": \"Repository\"}")
-        echo "Update: $UPDATE_RESPONSE"
+      - name: Test Workspace Git Update
+        env:
+          WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
+        run: |
+          echo "Triggering Git update..."
+          UPDATE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/update" \
+            -H "Authorization: Bearer $FABRIC_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"commitId": null, "resolveConflicts": "Repository"}')
+          echo "$UPDATE_RESPONSE"
