@@ -2,7 +2,10 @@ name: Get URL and Install Tabular Editor 2.x and Run the BPA
 
 # Trigger this workflow manually via GitHub Actions UI
 on:
-  workflow_dispatch:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [main]
 
 jobs:
   # First job: Retrieve the latest download URL for Tabular Editor 2.x
