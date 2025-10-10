@@ -1,11 +1,17 @@
-name: Test Fabric API
+name: Power BI Fabric CI/CD
 
 on:
   push:
-    branches: [ "*" ]  # Triggers on push to any branch
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  FABRIC_API_URL: https://api.fabric.microsoft.com
 
 jobs:
-  test-api:
+  deploy-dev-test:
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -17,19 +23,65 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+        allow-no-subscriptions: true  # Added to bypass subscription requirement
 
     - name: Get Fabric Access Token
       id: token
       run: |
-        token=$(az account get-access-token --resource https://api.fabric.microsoft.com --query accessToken -o tsv)
+        token=$(az account get-access-token --resource ${{ env.FABRIC_API_URL }} --query accessToken -o tsv)
         echo "FABRIC_TOKEN=$token" >> $GITHUB_ENV
 
-    - name: Check Git Status
+    - name: Sync Test Workspace from Git
       env:
-        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
+        WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}  # Use dev for testing
+        BRANCH: develop
       run: |
         STATUS_RESPONSE=$(curl -X GET \
-          "https://api.fabric.microsoft.com/v1/workspaces/$WORKSPACE_ID/git/status" \
+          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/status" \
           -H "Authorization: Bearer $FABRIC_TOKEN" \
           -H "Content-Type: application/json")
-        echo "Git Status: $STATUS_RESPONSE"
+        echo "Status: $STATUS_RESPONSE"
+        UPDATE_RESPONSE=$(curl -X POST \
+          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/update" \
+          -H "Authorization: Bearer $FABRIC_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d "{\"commitId\": null, \"resolveConflicts\": \"Repository\"}")
+        echo "Update: $UPDATE_RESPONSE"
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Azure
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+        allow-no-subscriptions: true  # Added to bypass subscription requirement
+
+    - name: Get Fabric Access Token
+      id: token
+      run: |
+        token=$(az account get-access-token --resource ${{ env.FABRIC_API_URL }} --query accessToken -o tsv)
+        echo "FABRIC_TOKEN=$token" >> $GITHUB_ENV
+
+    - name: Sync Prod Workspace from Git
+      env:
+        WORKSPACE_ID: ${{ vars.PROD_WORKSPACE_ID }}  # Add this variable later for prod
+        BRANCH: main
+      run: |
+        STATUS_RESPONSE=$(curl -X GET \
+          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/status" \
+          -H "Authorization: Bearer $FABRIC_TOKEN" \
+          -H "Content-Type: application/json")
+        echo "Status: $STATUS_RESPONSE"
+        UPDATE_RESPONSE=$(curl -X POST \
+          "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/update" \
+          -H "Authorization: Bearer $FABRIC_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d "{\"commitId\": null, \"resolveConflicts\": \"Repository\"}")
+        echo "Update: $UPDATE_RESPONSE"
