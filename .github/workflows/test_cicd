@@ -1,4 +1,4 @@
-name: Power BI Fabric CI/CD (.pbip)
+name: Power BI Fabric CI/CD
 
 on:
   push:
