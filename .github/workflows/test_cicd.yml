@@ -1,4 +1,4 @@
-name: Power BI Fabric CI/CD (with BPA)
+name: Power BI Fabric CI/CD (with BPA - TE3)
 
 on:
   push:
@@ -15,21 +15,21 @@ permissions:
 
 jobs:
   validate-and-deploy:
-    runs-on: windows-latest   # Tabular Editor CLI requires Windows
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Tabular Editor 2 Portable
+      - name: Setup Tabular Editor 3 Portable
         shell: pwsh
         run: |
-          Write-Host "⬇️  Downloading Tabular Editor 2 portable..."
-          $url = "https://github.com/TabularEditor/TabularEditor/releases/latest/download/TabularEditor.Portable.zip"
-          Invoke-WebRequest -Uri $url -OutFile "TabularEditor.zip"
-          Expand-Archive TabularEditor.zip -DestinationPath "TabularEditor"
-          Write-Host "✅ Tabular Editor extracted."
-          Get-ChildItem TabularEditor
+          Write-Host "⬇️  Downloading Tabular Editor 3 portable..."
+          $url = "https://github.com/TabularEditor/TabularEditor/releases/latest/download/TabularEditor3.Portable.zip"
+          Invoke-WebRequest -Uri $url -OutFile "TabularEditor3.zip"
+          Expand-Archive TabularEditor3.zip -DestinationPath "TabularEditor3"
+          Write-Host "✅ Tabular Editor 3 extracted."
+          Get-ChildItem TabularEditor3
 
       - name: Azure Login
         uses: azure/login@v2
@@ -52,13 +52,14 @@ jobs:
           Write-Host "FABRIC_TOKEN=$FABRIC_TOKEN" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
           Write-Host "✅ Token retrieved."
 
-      - name: Run BPA Validation
+      - name: Run BPA Validation (TE3)
         shell: pwsh
         run: |
-          Write-Host "🔍 Running Best Practice Analyzer..."
+          Write-Host "🔍 Running Best Practice Analyzer (TE3)..."
+
           $ModelPath = "CCDP.SemanticModel/definition/model.tmdl"
           $RulesPath = "BPARules.json"
-          $TEPath = "TabularEditor/TabularEditor.exe"
+          $TEPath = "TabularEditor3/TabularEditor.exe"
           $ExportPath = Join-Path (Get-Location) "bpa-results.json"
 
           Write-Host "Working directory: $(Get-Location)"
@@ -66,11 +67,12 @@ jobs:
           Write-Host "Rules path: $RulesPath"
           Write-Host "Export path: $ExportPath"
 
-          if (-Not (Test-Path $ModelPath)) { Write-Error "❌ model.tmdl not found at $ModelPath"; exit 1 }
-          if (-Not (Test-Path $RulesPath)) { Write-Error "❌ BPARules.json not found at $RulesPath"; exit 1 }
+          if (-Not (Test-Path $ModelPath)) { Write-Error "❌ model.tmdl not found"; exit 1 }
+          if (-Not (Test-Path $RulesPath)) { Write-Error "❌ BPARules.json not found"; exit 1 }
 
-          Write-Host "🧠 Executing BPA via $TEPath..."
-          & $TEPath -BPA $ModelPath -Rules $RulesPath -ExportResults $ExportPath -IgnoreWarnings -Format JSON
+          # Run BPA
+          Write-Host "🧠 Executing BPA via TE3..."
+          & $TEPath -BPA $ModelPath -Rules $RulesPath -ExportResults $ExportPath -Format JSON
 
           if (-Not (Test-Path $ExportPath)) { Write-Error "❌ BPA export file not created"; exit 1 }
 
