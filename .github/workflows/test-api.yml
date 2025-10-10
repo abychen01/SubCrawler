@@ -12,6 +12,9 @@ env:
 jobs:
   deploy-dev-test:
     if: github.ref == 'refs/heads/develop'
+    permissions:
+      id-token: write  # Added to enable OIDC token
+      contents: read   # Required for checkout
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -23,7 +26,7 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        allow-no-subscriptions: true  # Added to bypass subscription requirement
+        allow-no-subscriptions: true  # Bypass subscription requirement for Fabric API
 
     - name: Get Fabric Access Token
       id: token
@@ -50,6 +53,9 @@ jobs:
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write  # Added to enable OIDC token
+      contents: read   # Required for checkout
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -61,7 +67,7 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        allow-no-subscriptions: true  # Added to bypass subscription requirement
+        allow-no-subscriptions: true  # Bypass subscription requirement for Fabric API
 
     - name: Get Fabric Access Token
       id: token
