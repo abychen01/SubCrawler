@@ -2,9 +2,9 @@ name: Power BI Fabric CI/CD
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop]
   pull_request:
-    branches: [main]
+    branches: [develop]
 
 env:
   FABRIC_API_URL: https://api.fabric.microsoft.com
