@@ -1,4 +1,4 @@
-name: Get URL and Install Tabular Editor 2.x and Run the BPA
+name: CI
 
 # Trigger this workflow manually via GitHub Actions UI
 on:
