@@ -8,7 +8,7 @@ on:
 
 env:
   FABRIC_API_URL: https://api.fabric.microsoft.com
-  PBIP_DIR: ./reports # Directory containing .pbip files
+  PBIP_DIR: ${{ vars.PBIP_DIR || '.' }} # Use repository root as fallback if PBIP_DIR is not set
 
 permissions:
   id-token: write
@@ -47,14 +47,16 @@ jobs:
         run: |
           echo "Running Power BI Best Practices Analyzer checks..."
           # Check if .pbip files exist
-          if [ ! -d "${{ env.PBIP_DIR }}" ] || ! ls ${{ env.PBIP_DIR }}/*.pbip >/dev/null 2>&1; then
+          PBIP_FILES=$(find "${{ env.PBIP_DIR }}" -type d -name "*.pbip" 2>/dev/null)
+          if [ -z "$PBIP_FILES" ]; then
             echo "Error: No .pbip files found in ${{ env.PBIP_DIR }}"
+            echo "Please set the PBIP_DIR variable in GitHub repository settings or ensure .pbip files exist."
             exit 1
           fi
           # Initialize flag for validation errors
           VALIDATION_FAILED=false
           # Check for '/' in measures
-          for pbip in ${{ env.PBIP_DIR }}/*.pbip; do
+          while IFS= read -r pbip; do
             if [ -d "$pbip" ]; then
               echo "Checking $pbip for BPA compliance..."
               # Extract measures and check for '/' in DAX expressions
@@ -78,7 +80,7 @@ jobs:
                 echo "Warning: High cardinality columns detected in $pbip"
               fi
             fi
-          done
+          done <<< "$PBIP_FILES"
           if [ "$VALIDATION_FAILED" = true ]; then
             echo "Error: BPA validation failed due to invalid measures."
             exit 1
@@ -91,7 +93,7 @@ jobs:
           FABRIC_TOKEN: ${{ env.FABRIC_TOKEN }}
         run: |
           echo "Publishing .pbip files to Fabric workspace $WORKSPACE_ID..."
-          for pbip in ${{ env.PBIP_DIR }}/*.pbip; do
+          while IFS= read -r pbip; do
             if [ -d "$pbip" ]; then
               pbip_name=$(basename "$pbip")
               echo "Processing $pbip_name..."
@@ -105,5 +107,5 @@ jobs:
                 || { echo "Error: Failed to publish $pbip_name"; exit 1; }
               rm "${pbip_name}.zip"
             fi
-          done
+          done <<< "$(find "${{ env.PBIP_DIR }}" -type d -name "*.pbip" 2>/dev/null)"
           echo "All .pbip files published successfully."
