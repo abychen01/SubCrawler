@@ -1,4 +1,4 @@
-name: Power BI Fabric CI/CD
+name: Power BI Fabric CI/CD (.pbip TMDL)
 
 on:
   push:
@@ -40,12 +40,10 @@ jobs:
           FABRIC_TOKEN=$(az account get-access-token --resource "${{ env.FABRIC_API_URL }}" --query accessToken -o tsv)
           echo "FABRIC_TOKEN=$FABRIC_TOKEN" >> $GITHUB_ENV
 
-      - name: Validate DIVIDE usage in measures
+      - name: Validate DIVIDE usage in measures (TMDL)
         run: |
-          echo "Unzipping PBIP..."
-          unzip CCDP.pbip -d CCDP_extracted
-          echo "Checking for '/' in DAX measures..."
-          INVALID_MEASURES=$(grep -rPo '"Expression"\s*:\s*"\K[^"]+' CCDP_extracted/Model | grep '/')
+          echo "Checking for '/' in DAX measures in model.tmdl..."
+          INVALID_MEASURES=$(grep -rPo 'measure\s+\w+\s*=\s*.*' CCDP.SemanticModel/model.tmdl | grep '/')
           if [ ! -z "$INVALID_MEASURES" ]; then
             echo "Error: Found measures using '/' instead of DIVIDE():"
             echo "$INVALID_MEASURES"
@@ -58,8 +56,9 @@ jobs:
           WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
           FABRIC_TOKEN: ${{ env.FABRIC_TOKEN }}
         run: |
+          echo "Zipping PBIP and related folders..."
+          zip -r pbip_package.zip CCDP.pbip CCDP.Report CCDP.SemanticModel
           echo "Publishing .pbip file to Fabric..."
-          zip -r pbip_package.zip yourfile.pbip
           curl -X POST \
             "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/files" \
             -H "Authorization: Bearer $FABRIC_TOKEN" \
