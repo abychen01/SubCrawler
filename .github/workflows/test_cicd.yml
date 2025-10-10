@@ -42,8 +42,10 @@ jobs:
 
       - name: Validate DIVIDE usage in measures
         run: |
+          echo "Unzipping PBIP..."
+          unzip CCDP.pbip -d CCDP_extracted
           echo "Checking for '/' in DAX measures..."
-          INVALID_MEASURES=$(grep -rPo '"Expression"\s*:\s*"\K[^"]+' CCDP.pbip/Model | grep '/')
+          INVALID_MEASURES=$(grep -rPo '"Expression"\s*:\s*"\K[^"]+' CCDP_extracted/Model | grep '/')
           if [ ! -z "$INVALID_MEASURES" ]; then
             echo "Error: Found measures using '/' instead of DIVIDE():"
             echo "$INVALID_MEASURES"
