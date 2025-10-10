@@ -44,12 +44,12 @@ jobs:
 
       - name: Validate DIVIDE usage in measures (TMDL)
         run: |
-          echo "🔍 Validating DAX measures for correct DIVIDE() usage..."
-          if [ ! -f "CCDP.SemanticModel/model.tmdl" ]; then
-            echo "❌ Error: model.tmdl not found at CCDP.SemanticModel/model.tmdl"
+          echo "🔍 Validating DAX measures in model.tmdl..."
+          if [ ! -f "CCDP.SemanticModel/definition/model.tmdl" ]; then
+            echo "❌ Error: model.tmdl not found at CCDP.SemanticModel/definition/model.tmdl"
             exit 1
           fi
-          INVALID_MEASURES=$(grep -E 'measure .*=' CCDP.SemanticModel/model.tmdl | grep '/')
+          INVALID_MEASURES=$(grep -E 'measure .*=' CCDP.SemanticModel/definition/model.tmdl | grep '/')
           if [ ! -z "$INVALID_MEASURES" ]; then
             echo "❌ Found measures using '/' instead of DIVIDE():"
             echo "$INVALID_MEASURES"
