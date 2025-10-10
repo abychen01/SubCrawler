@@ -46,16 +46,25 @@ jobs:
       - name: Run BPA Checks
         run: |
           echo "Running Power BI Best Practices Analyzer checks..."
-          # Check for DIVIDE usage
+          # Check if .pbip files exist
+          if [ ! -d "${{ env.PBIP_DIR }}" ] || ! ls ${{ env.PBIP_DIR }}/*.pbip >/dev/null 2>&1; then
+            echo "Error: No .pbip files found in ${{ env.PBIP_DIR }}"
+            exit 1
+          fi
+          # Initialize flag for validation errors
+          VALIDATION_FAILED=false
+          # Check for '/' in measures
           for pbip in ${{ env.PBIP_DIR }}/*.pbip; do
             if [ -d "$pbip" ]; then
-              echo "Checking $pbip..."
-              # Check for '/' in measures
-              INVALID_MEASURES=$(grep -rPo '"Expression"\s*:\s*"\K[^"]+' "$pbip/Model" | grep -E '[^A-Z0-9_/ ]/[ ]*[^A-Z0-9_/ ]' || true)
+              echo "Checking $pbip for BPA compliance..."
+              # Extract measures and check for '/' in DAX expressions
+              INVALID_MEASURES=$(find "$pbip" -type f -name "*.json" -exec grep -l '"type": "measure"' {} \; | while read -r file; do
+                grep -B1 '"type": "measure"' "$file" | grep -Po '"Expression"\s*:\s*"\K[^"]+' | grep -E '[^A-Z0-9_/ ]/[ ]*[^A-Z0-9_/ ]' && echo " (in $file)" || true
+              done)
               if [ ! -z "$INVALID_MEASURES" ]; then
                 echo "Error: Found measures using '/' instead of DIVIDE() in $pbip:"
                 echo "$INVALID_MEASURES"
-                exit 1
+                VALIDATION_FAILED=true
               fi
               # Additional BPA checks
               # Check for unused columns
@@ -70,6 +79,10 @@ jobs:
               fi
             fi
           done
+          if [ "$VALIDATION_FAILED" = true ]; then
+            echo "Error: BPA validation failed due to invalid measures."
+            exit 1
+          fi
           echo "BPA checks completed successfully."
 
       - name: Publish PBIP to Fabric Workspace
