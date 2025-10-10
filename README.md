@@ -134,5 +134,5 @@ Contributions are welcome! Please submit a pull request or open an issue for sug
 This project does not use a specific open-source license and is intended for educational and non-commercial purposes only.
 
 ## Contact
-- Repo Owner: [abychen01](https://github.com/abychen01).
+- Repo Owner: [abychen01](https://github.com/abychen01)
 - For questions: Open an issue.
