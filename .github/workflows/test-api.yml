@@ -45,22 +45,9 @@ jobs:
           echo "FABRIC_TOKEN=$FABRIC_TOKEN" >> $GITHUB_ENV
           echo "Token fetched successfully."
 
-      - name: Determine Branch & Workspace
-        id: branch-workspace
-        run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
-            echo "BRANCH=develop" >> $GITHUB_ENV
-            echo "WORKSPACE_ID=${{ vars.DEV_WORKSPACE_ID }}" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "BRANCH=main" >> $GITHUB_ENV
-            echo "WORKSPACE_ID=${{ vars.PROD_WORKSPACE_ID }}" >> $GITHUB_ENV
-          else
-            echo "Unsupported branch"
-            exit 1
-          fi
-          echo "Branch and Workspace set."
-
       - name: Check Git Status in Workspace
+        env:
+          WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
         run: |
           echo "Checking Git status in workspace..."
           STATUS=$(curl -s -w "\n%{http_code}" -X GET \
@@ -70,6 +57,8 @@ jobs:
           echo "$STATUS"
 
       - name: Trigger Git Update in Workspace
+        env:
+          WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
         run: |
           echo "Triggering Git update in workspace..."
           UPDATE=$(curl -s -w "\n%{http_code}" -X POST \
