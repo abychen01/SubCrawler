@@ -2,63 +2,79 @@ name: Power BI Fabric CI/CD
 
 on:
   push:
-    branches: [ develop, main ]
+    branches: [develop, main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   FABRIC_API_URL: https://api.fabric.microsoft.com
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Azure
+      - name: Azure Login
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          auth-type: service-principal
           allow-no-subscriptions: true
-          auth-type: SERVICE_PRINCIPAL
 
-      - name: Debug Azure CLI Environment
+      - name: Debug Azure CLI
         run: |
+          echo "Azure CLI version:"
           az --version
+          echo "Logged-in account:"
           az account show
 
       - name: Get Fabric Access Token
-        id: token
+        id: get-token
         run: |
-          echo "Getting Fabric token..."
+          echo "Fetching Fabric token..."
           FABRIC_TOKEN=$(az account get-access-token --resource "${{ env.FABRIC_API_URL }}" --query accessToken -o tsv)
           echo "FABRIC_TOKEN=$FABRIC_TOKEN" >> $GITHUB_ENV
           echo "Token fetched successfully."
 
-      - name: Test Workspace Git Connection
-        env:
-          WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
+      - name: Determine Branch & Workspace
+        id: branch-workspace
         run: |
-          echo "Checking workspace Git status..."
-          STATUS_RESPONSE=$(curl -s -w "\n%{http_code}" -X GET \
+          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+            echo "BRANCH=develop" >> $GITHUB_ENV
+            echo "WORKSPACE_ID=${{ vars.DEV_WORKSPACE_ID }}" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "BRANCH=main" >> $GITHUB_ENV
+            echo "WORKSPACE_ID=${{ vars.PROD_WORKSPACE_ID }}" >> $GITHUB_ENV
+          else
+            echo "Unsupported branch"
+            exit 1
+          fi
+          echo "Branch and Workspace set."
+
+      - name: Check Git Status in Workspace
+        run: |
+          echo "Checking Git status in workspace..."
+          STATUS=$(curl -s -w "\n%{http_code}" -X GET \
             "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/status" \
             -H "Authorization: Bearer $FABRIC_TOKEN" \
             -H "Content-Type: application/json")
-          echo "$STATUS_RESPONSE"
+          echo "$STATUS"
 
-      - name: Test Workspace Git Update
-        env:
-          WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
+      - name: Trigger Git Update in Workspace
         run: |
-          echo "Triggering Git update..."
-          UPDATE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+          echo "Triggering Git update in workspace..."
+          UPDATE=$(curl -s -w "\n%{http_code}" -X POST \
             "${{ env.FABRIC_API_URL }}/v1/workspaces/$WORKSPACE_ID/git/update" \
             -H "Authorization: Bearer $FABRIC_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"commitId": null, "resolveConflicts": "Repository"}')
-          echo "$UPDATE_RESPONSE"
+          echo "$UPDATE"
