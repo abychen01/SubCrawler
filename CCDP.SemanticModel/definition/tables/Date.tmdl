@@ -1,0 +1,98 @@
+table Date
+	lineageTag: 65eca9df-b6a1-4fdf-aa58-f69714dddd29
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: 559b8edc-6704-4e7e-b3b6-2b16e6a9af18
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 37c23f0d-4f43-412e-bb43-0c64bbcfbb6f
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: double
+		lineageTag: 3b781d9b-4fd2-40ce-ba5c-7825dee28039
+		summarizeBy: sum
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Month
+		dataType: double
+		lineageTag: 8e2e77fb-c3c9-49aa-861f-26f214850414
+		summarizeBy: sum
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Week of year'
+		dataType: double
+		lineageTag: d466bc7a-d062-4b98-aa5f-6d1bd25df2d1
+		summarizeBy: sum
+		sourceColumn: Week of year
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Day
+		dataType: double
+		lineageTag: b9f069e1-a711-434a-83af-009e973e35f2
+		summarizeBy: sum
+		sourceColumn: Day
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Day name'
+		dataType: string
+		lineageTag: 607b5790-a1d0-409b-9297-6a78f8bec756
+		summarizeBy: none
+		sourceColumn: Day name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Date = m
+		mode: import
+		source =
+				let
+				  Source = List.Dates(#date(2025,1,1),1460, #duration(1,0,0,0)),
+				  #"Converted to table" = Table.FromList(Source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Converted to table", {{"Column1", type date}}),
+				  #"Renamed columns" = Table.RenameColumns(#"Changed column type", {{"Column1", "Date"}}),
+				  #"Inserted year" = Table.AddColumn(#"Renamed columns", "Year", each Date.Year([Date]), type nullable number),
+				  #"Changed column type 1" = Table.TransformColumnTypes(#"Inserted year", {{"Year", Int64.Type}}),
+				  #"Inserted month" = Table.AddColumn(#"Changed column type 1", "Month", each Date.Month([Date]), type nullable number),
+				  #"Inserted quarter" = Table.AddColumn(#"Inserted month", "Quarter", each Date.QuarterOfYear([Date]), type nullable number),
+				  #"Inserted day" = Table.AddColumn(#"Inserted quarter", "Day", each Date.Day([Date]), type nullable number),
+				  #"Inserted day name" = Table.AddColumn(#"Inserted day", "Day name", each Date.DayOfWeekName([Date]), type nullable text),
+				  #"Inserted week of year" = Table.AddColumn(#"Inserted day name", "Week of year", each Date.WeekOfYear([Date]), type nullable number),
+				  #"Reordered columns" = Table.ReorderColumns(#"Inserted week of year", {"Date", "Year", "Quarter", "Month", "Week of year", "Day", "Day name"})
+				in
+				  #"Reordered columns"
+
+	changedProperty = Name
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

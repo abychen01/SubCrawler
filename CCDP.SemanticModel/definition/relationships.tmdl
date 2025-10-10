@@ -1,0 +1,9 @@
+relationship c4ac74a8-66df-395d-7433-4640ff3cecb7
+	fromColumn: submissions.time_est
+	toColumn: Date.Date
+
+relationship 0243dabd-b54d-3c2c-c5d5-0ba0daf1db04
+	crossFilteringBehavior: bothDirections
+	fromColumn: comments.time_est
+	toColumn: Date.Date
+

@@ -1,0 +1,172 @@
+table comments
+	lineageTag: 82477a72-f1f3-4b30-b391-ce9359eb353b
+
+	measure total_count = COUNTROWS(comments)
+		formatString: 0
+		lineageTag: 0ce73973-6e08-4d23-bca3-4e1f199b5825
+
+	measure last24h_count = ```
+			
+			    var counts = 
+			        CALCULATE(
+			            comments[total_count],
+			            FILTER(
+			                comments,
+			                comments[time_est] > NOW() - 1
+			            )
+			        )
+			    RETURN
+			        IF(
+			            counts = BLANK(),
+			            0,
+			            counts
+			        )
+			```
+		formatString: 0
+		lineageTag: 8a1249a7-1200-4a2b-af51-1642e2c0195c
+
+	measure last24h_flag = ```
+			
+			    IF(
+			        SELECTEDVALUE(comments[time_est]) > (NOW() - 1),
+			        1,
+			        0
+			    )
+			```
+		formatString: 0
+		lineageTag: 554a4c5d-ebf4-4b6d-ab77-b3acf35a08ab
+
+	measure last7d_flag = ```
+			
+			    IF(
+			        SELECTEDVALUE(comments[time_est]) > (NOW() - 7),
+			        1,
+			        0
+			    )
+			```
+		formatString: 0
+		lineageTag: d6c59928-c33a-4164-8fe3-70d7c0a3e8cc
+
+	measure last30d_flag = ```
+			
+			    IF(
+			        SELECTEDVALUE(comments[time_est]) > (NOW() - 30),
+			        1,
+			        0
+			    )
+			```
+		formatString: 0
+		lineageTag: 0318606b-5815-4110-8ba1-017e0dfe54e1
+
+	measure last6m_flag = ```
+			
+			    IF(
+			        SELECTEDVALUE(comments[time_est]) > (NOW() - 182),
+			        1,
+			        0
+			    )
+			```
+		formatString: 0
+		lineageTag: 4f384fed-aa74-4dcc-9dbf-0c1cafb3bc30
+
+	measure last1y_flag = ```
+			
+			    IF(
+			        SELECTEDVALUE(comments[time_est]) > (NOW() - 365),
+			        1,
+			        0
+			    )
+			```
+		formatString: 0
+		lineageTag: 1722ba18-6f28-4d6f-ae80-0322188eb7a2
+
+	column submission_id
+		dataType: string
+		lineageTag: 50853081-fb2e-4aaf-8404-c7e674068a56
+		summarizeBy: none
+		sourceColumn: submission_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column comment_id
+		dataType: string
+		lineageTag: 82f07480-7015-4045-83f7-00fca8d69d55
+		summarizeBy: none
+		sourceColumn: comment_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column keyword
+		dataType: string
+		lineageTag: 67d16125-3b87-41cd-afe9-f79e2341c1d7
+		summarizeBy: none
+		sourceColumn: keyword
+
+		annotation SummarizationSetBy = Automatic
+
+	column comment_body
+		dataType: string
+		lineageTag: de4dee64-f687-4800-8f22-a377409c1564
+		summarizeBy: none
+		sourceColumn: comment_body
+
+		annotation SummarizationSetBy = Automatic
+
+	column score
+		dataType: int64
+		formatString: 0
+		lineageTag: 437b3c02-1530-4e0f-9206-063588e21bfa
+		summarizeBy: sum
+		sourceColumn: score
+
+		annotation SummarizationSetBy = Automatic
+
+	column time_utc
+		dataType: string
+		lineageTag: c4885fd7-433a-4198-976c-462f5cb66bc3
+		summarizeBy: none
+		sourceColumn: time_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	column URL
+		dataType: string
+		lineageTag: 1b0bf013-4d27-43b2-a35a-89218e8f724e
+		dataCategory: WebUrl
+		summarizeBy: none
+		sourceColumn: URL
+
+		annotation SummarizationSetBy = Automatic
+
+	column time_est
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 44866162-0e43-4c5d-ad4a-658804fd5438
+		summarizeBy: none
+		sourceColumn: time_est
+
+		annotation SummarizationSetBy = Automatic
+
+	column comment_sentiment
+		dataType: double
+		lineageTag: f326491f-d017-4824-985b-867a22af655b
+		summarizeBy: sum
+		sourceColumn: comment_sentiment
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition comments = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("myfreesqldbserver66.database.windows.net", "subcrawler"),
+				    dbo_comments = Source{[Schema="dbo",Item="comments"]}[Data]
+				in
+				    dbo_comments
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
