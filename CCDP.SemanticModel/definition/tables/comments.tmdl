@@ -66,7 +66,7 @@ table comments
 		formatString: 0
 		lineageTag: 4f384fed-aa74-4dcc-9dbf-0c1cafb3bc30
 
-	measure last1y_flag = ```
+	measure Last1y_flag = ```
 			
 			    IF(
 			        SELECTEDVALUE(comments[time_est]) > (NOW() - 365),
@@ -74,7 +74,7 @@ table comments
 			        0
 			    )
 			```
-		formatString: 0
+		formatString: #,0
 		lineageTag: 1722ba18-6f28-4d6f-ae80-0322188eb7a2
 
 	column submission_id

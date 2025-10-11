@@ -163,7 +163,7 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           DEV_WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
-          FABRIC_XMLA_ENDPOINT: ${{ vars.FABRIC_XMLA_ENDPOINT }}  # e.g., powerbi://api.powerbi.com/v1.0/myorg/{DEV_WORKSPACE_ID}
+          FABRIC_XMLA_ENDPOINT: ${{ vars.FABRIC_XMLA_ENDPOINT }}
         run: |
           Import-Module MicrosoftPowerBIMgmt
 
@@ -194,7 +194,7 @@ jobs:
           }
           Write-Host "Deploying model to Fabric workspace via XMLA endpoint: $env:FABRIC_XMLA_ENDPOINT"
 
-          # Deploy using Tabular Editor
+          # Deploy using Tabular Editor with detailed output
           $deployArgs = @(
             "`"$PWD/CCDP.SemanticModel/definition/database.tmdl`"",
             "-D",
@@ -202,9 +202,11 @@ jobs:
             "-S",
             "CreateOrOverwrite"
           )
-          & ./"TabularEditor.exe" @deployArgs
+          Write-Host "Running Tabular Editor with args: $deployArgs"
+          & ./"TabularEditor.exe" @deployArgs | Tee-Object -Variable teOutput
           if ($LASTEXITCODE -ne 0) {
             Write-Error "❌ Deployment failed with exit code $LASTEXITCODE"
+            Write-Host "Tabular Editor output: $teOutput"
             exit 1
           }
           Write-Host "✅ Deployment successful."
