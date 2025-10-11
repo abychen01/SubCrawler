@@ -54,6 +54,7 @@ jobs:
         run: |
           curl -L ${{ needs.Get_download_URL_for_Tabular_Editor.outputs.download_url }} -o TabularEditor.zip
           unzip TabularEditor.zip
+        shell: pwsh
 
       - name: Run Tabular Editor and save BPA output
         continue-on-error: true
@@ -124,7 +125,7 @@ jobs:
           path: ./BPA_output.txt
           if-no-files-found: error
 
-    # Step 3: Deploy to Fabric.
+  # Step 3: Deploy to Fabric
   Deploy_to_Fabric:
     needs: 
       - Install_TabularEditor_and_run_BPA
@@ -136,24 +137,14 @@ jobs:
 
       - name: Install Tabular Editor
         run: |
-          # Download and extract Tabular Editor
           $url = "${{ needs.Get_download_URL_for_Tabular_Editor.outputs.download_url }}"
-          Write-Host "Downloading Tabular Editor from: $url"
+          Write-Host "⬇️ Downloading Tabular Editor from: $url"
           curl -L "$url" -o TabularEditor.zip
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to download Tabular Editor."
-            exit 1
-          }
           unzip TabularEditor.zip
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to unzip TabularEditor.zip."
-            exit 1
-          }
         shell: pwsh
 
       - name: Install PowerShell module for Fabric deployment
         run: |
-          # Install all PowerBI modules
           Install-Module -Name MicrosoftPowerBIMgmt -Force -Scope CurrentUser
         shell: pwsh
 
@@ -167,9 +158,10 @@ jobs:
         run: |
           Import-Module MicrosoftPowerBIMgmt
 
-          Write-Host "Authenticating to Azure..."
+          Write-Host "🔐 Authenticating to Azure..."
           $secureSecret = ConvertTo-SecureString -String $env:AZURE_CLIENT_SECRET -AsPlainText -Force
           $credential = New-Object System.Management.Automation.PSCredential($env:AZURE_CLIENT_ID, $secureSecret)
+
           try {
             Connect-PowerBIServiceAccount -ServicePrincipal -Credential $credential -Tenant $env:AZURE_TENANT_ID
             Write-Host "✅ Authentication successful."
@@ -178,47 +170,51 @@ jobs:
             exit 1
           }
 
-          # Verify workspace access
-          Write-Host "Checking workspace access for DEV_WORKSPACE_ID: $env:DEV_WORKSPACE_ID"
+          Write-Host "🔍 Checking workspace access..."
           try {
             $workspace = Get-PowerBIWorkspace -Id $env:DEV_WORKSPACE_ID -ErrorAction Stop
             Write-Host "✅ Connected to workspace: $($workspace.Name)"
           } catch {
-            Write-Warning "⚠️ Failed to verify workspace access: $($_.Exception.Message). Proceeding with deployment."
+            Write-Warning "⚠️ Could not verify workspace access: $($_.Exception.Message)"
           }
 
-          # Validate XMLA endpoint
           if (-not $env:FABRIC_XMLA_ENDPOINT) {
-            Write-Error "❌ FABRIC_XMLA_ENDPOINT is not set. Please configure it in GitHub repository variables."
+            Write-Error "❌ FABRIC_XMLA_ENDPOINT not set in repository variables."
             exit 1
           }
-          Write-Host "Deploying model to Fabric workspace via XMLA endpoint: $env:FABRIC_XMLA_ENDPOINT"
 
-          # Define and validate the model file path
-          $modelPath = "CCDP.SemanticModel\definition\database.tmdl"  # Relative to repo root, no leading .\
+          $modelPath = "CCDP.SemanticModel\definition\database.tmdl"
           $fullModelPath = Join-Path $PWD $modelPath
-          Write-Host "Resolved model file path: $fullModelPath"
           if (-not (Test-Path $fullModelPath)) {
             Write-Error "❌ Model file not found at $fullModelPath"
-            Write-Host "Directory contents:"
-            Get-ChildItem -Path $PWD -Recurse | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
 
-          # Deploy using Tabular Editor with detailed output
+          Write-Host "🚀 Deploying model to Fabric workspace via XMLA endpoint:"
+          Write-Host "   $env:FABRIC_XMLA_ENDPOINT"
+
           $deployArgs = @(
-            "`"$fullModelPath`"",
-            "-D",
-            "`"$env:FABRIC_XMLA_ENDPOINT`"",
-            "-S",
-            "CreateOrOverwrite"
+            $fullModelPath,
+            "-D", $env:FABRIC_XMLA_ENDPOINT,
+            "-S", "CreateOrOverwrite"
           )
-          Write-Host "Running Tabular Editor with args: $deployArgs"
-          & ./"TabularEditor.exe" @deployArgs | Tee-Object -Variable teOutput
+
+          Write-Host "🧠 Running Tabular Editor with arguments:"
+          $deployArgs | ForEach-Object { Write-Host "  $_" }
+
+          & .\TabularEditor.exe @deployArgs *>&1 | Tee-Object -FilePath TabularEditorLog.txt
+
           if ($LASTEXITCODE -ne 0) {
-            Write-Error "❌ Model deployment failed with exit code $LASTEXITCODE"
-            Write-Host "Tabular Editor output: $teOutput"
+            Write-Error "❌ Deployment failed with exit code $LASTEXITCODE"
             exit 1
           }
+
           Write-Host "✅ Model deployment successful."
         shell: pwsh
+
+      - name: Upload Fabric Deployment Log
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fabric_Deployment_Log
+          path: ./TabularEditorLog.txt
+          if-no-files-found: error
