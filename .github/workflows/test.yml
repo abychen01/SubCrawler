@@ -77,49 +77,54 @@ jobs:
       - name: Check BPA severity levels and fail only on severity 3
         run: |
           Write-Host "🔍 Checking BPA output for rule severities..."
-          $content = Get-Content "./BPA_output.txt"
+          $bpaContent = Get-Content "./BPA_output.txt"
+          $rulesJson = Get-Content "BPARules.json" | ConvertFrom-Json
 
-          # Find all Severity 3, 2, and 1 rule blocks with context (same display style as your BPA output)
-          $severity3 = $content | Select-String -Pattern "Severity\s*3" -Context 4,4
-          $severity2 = $content | Select-String -Pattern "Severity\s*2" -Context 4,4
-          $severity1 = $content | Select-String -Pattern "Severity\s*1" -Context 4,4
+          # Build dictionary of rule name -> severity
+          $ruleMap = @{}
+          foreach ($r in $rulesJson) {
+            $ruleMap[$r.Name] = $r.Severity
+          }
 
-          if ($severity3) {
-            Write-Host ""
-            Write-Host "❌ Found Severity 3 rule violations (these will fail the pipeline):"
-            Write-Host "==============================================================="
-            $severity3 | ForEach-Object {
-              Write-Host "---------------------------------------------------------------"
-              $_.Context.PreContext | ForEach-Object { Write-Host $_ }
-              Write-Host $_.Line
-              $_.Context.PostContext | ForEach-Object { Write-Host $_ }
+          # Extract all lines where BPA found violations
+          $violations = $bpaContent | Where-Object { $_ -match "violates rule" }
+
+          $severity3Found = $false
+          $summary = @()
+
+          foreach ($v in $violations) {
+            if ($v -match 'violates rule "(.*)"') {
+              $ruleName = $matches[1]
+              $severity = $ruleMap[$ruleName]
+              if (-not $severity) { $severity = "Unknown" }
+
+              $lineOut = "$v  -->  (Severity: $severity)"
+              $summary += $lineOut
+
+              if ($severity -eq 3) {
+                Write-Host "❌ $lineOut"
+                $severity3Found = $true
+              } elseif ($severity -eq 2) {
+                Write-Warning "⚠️ $lineOut"
+              } elseif ($severity -eq 1) {
+                Write-Host "ℹ️ $lineOut"
+              } else {
+                Write-Host "❔ $lineOut"
+              }
             }
+          }
+
+          if ($severity3Found) {
+            Write-Host "`n==============================================================="
+            Write-Host "❌ Severity 3 rule violations detected — failing CI pipeline."
+            Write-Host "==============================================================="
             exit 1
           } else {
-            Write-Host "✅ No Severity 3 rule violations found."
+            Write-Host "`n✅ No Severity 3 rule violations found."
           }
 
-          if ($severity2) {
-            Write-Warning "⚠️ Severity 2 warnings detected (non-blocking):"
-            $severity2 | ForEach-Object {
-              Write-Host "---------------------------------------------------------------"
-              $_.Context.PreContext | ForEach-Object { Write-Host $_ }
-              Write-Host $_.Line
-              $_.Context.PostContext | ForEach-Object { Write-Host $_ }
-            }
-          }
-
-          if ($severity1) {
-            Write-Warning "ℹ️ Severity 1 informational messages detected:"
-            $severity1 | ForEach-Object {
-              Write-Host "---------------------------------------------------------------"
-              $_.Context.PreContext | ForEach-Object { Write-Host $_ }
-              Write-Host $_.Line
-              $_.Context.PostContext | ForEach-Object { Write-Host $_ }
-            }
-          }
-
-          Write-Host "BPA rule scan complete."
+          Write-Host "`n🧾 Summary of all detected rules:"
+          $summary | ForEach-Object { Write-Host $_ }
         shell: pwsh
           
       - name: Upload BPA result into a .txt file
@@ -128,4 +133,3 @@ jobs:
           name: BPA_Result
           path: ./BPA_output.txt
           if-no-files-found: error
-          
