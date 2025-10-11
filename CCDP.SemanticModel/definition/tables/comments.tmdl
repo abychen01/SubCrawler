@@ -2,7 +2,7 @@ table comments
 	lineageTag: 82477a72-f1f3-4b30-b391-ce9359eb353b
 
 	measure total_count = COUNTROWS(comments)
-		formatString: 0
+		formatString: #,0
 		lineageTag: 0ce73973-6e08-4d23-bca3-4e1f199b5825
 
 	measure last24h_count = ```

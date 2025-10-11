@@ -126,17 +126,30 @@ jobs:
 
   # Step 3: Deploy to Fabric (Fixed)
   Deploy_to_Fabric:
-    needs: Install_TabularEditor_and_run_BPA
+    needs: 
+      - Install_TabularEditor_and_run_BPA
+      - Get_download_URL_for_Tabular_Editor  # Add explicit dependency
     runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Tabular Editor (reuse from previous job)
+      - name: Install Tabular Editor
         run: |
-          # Download and extract Tabular Editor (same as previous job for consistency)
-          curl -L ${{ needs.Get_download_URL_for_Tabular_Editor.outputs.download_url }} -o TabularEditor.zip
+          # Download and extract Tabular Editor
+          $url = "${{ needs.Get_download_URL_for_Tabular_Editor.outputs.download_url }}"
+          Write-Host "Downloading Tabular Editor from: $url"
+          curl -L "$url" -o TabularEditor.zip
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to download Tabular Editor."
+            exit 1
+          }
           unzip TabularEditor.zip
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to unzip TabularEditor.zip."
+            exit 1
+          }
+        shell: pwsh  # Use PowerShell for better error handling on Windows
 
       - name: Install PowerShell module for Fabric deployment
         run: |
@@ -150,7 +163,7 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           DEV_WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
-          FABRIC_XMLA_ENDPOINT: ${{ vars.FABRIC_XMLA_ENDPOINT }}  # Add this as a repo variable: powerbi://api.powerbi.com/v1.0/myorg/{DEV_WORKSPACE_ID}
+          FABRIC_XMLA_ENDPOINT: ${{ vars.FABRIC_XMLA_ENDPOINT }}  # e.g., powerbi://api.powerbi.com/v1.0/myorg/{DEV_WORKSPACE_ID}
         run: |
           Import-Module MicrosoftPowerBIMgmt
 
@@ -170,7 +183,6 @@ jobs:
           Write-Host "✅ Connected as: $($account | Select-Object -First 1 | ForEach-Object { $_.Name })"
 
           # Deploy using Tabular Editor (handles TMDL natively via XMLA endpoint)
-          # Assumes service principal has Contributor/Member role in the workspace and XMLA read/write is enabled
           Write-Host "Deploying model to Fabric workspace via XMLA endpoint: $env:FABRIC_XMLA_ENDPOINT"
           $deployArgs = @(
             "`"$PWD/CCDP.SemanticModel/definition/database.tmdl`"",
