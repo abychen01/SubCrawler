@@ -38,7 +38,9 @@ jobs:
           else
             echo "Failed to extract the version number from the response URL."
             exit 1
+          fi
         shell: bash
+
 
   # Step 2: Install Tabular Editor and run BPA
   Install_TabularEditor_and_run_BPA:
