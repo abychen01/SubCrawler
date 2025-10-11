@@ -38,7 +38,6 @@ jobs:
           else
             echo "Failed to extract the version number from the response URL."
             exit 1
-          fi
         shell: bash
 
   # Step 2: Install Tabular Editor and run BPA
@@ -54,11 +53,12 @@ jobs:
           curl -L ${{ needs.Get_download_URL_for_Tabular_Editor.outputs.download_url }} -o TabularEditor.zip
           unzip TabularEditor.zip
 
-      - name: Run Tabular Editor and the BPA against your semantic model
+      - name: Run Tabular Editor and save BPA output
         continue-on-error: true
         run: |
+          # Only save BPA output to file, don't print to console
           ./TabularEditor.exe "CCDP.SemanticModel/definition/database.tmdl" -A "BPARules.json" `
-          | Tee-Object -FilePath "./BPA_output.txt" 
+          | Out-File -FilePath "./BPA_output.txt" -Encoding utf8
         shell: pwsh
 
       - name: Check BPA severity levels and fail only on severity 3
@@ -77,7 +77,6 @@ jobs:
           $violations = $bpaContent | Where-Object { $_ -match "violates rule" }
 
           $severity3Found = $false
-          $summary = @()
           $printed = @{}
 
           foreach ($v in $violations) {
@@ -87,7 +86,6 @@ jobs:
               if (-not $severity) { $severity = "Unknown" }
 
               $lineOut = "$v  -->  (Severity: $severity)"
-              $summary += $lineOut
 
               # Only print each violation once, keeping the severity type line
               if (-not $printed.ContainsKey($lineOut)) {
@@ -119,9 +117,6 @@ jobs:
           } else {
             Write-Host "`n✅ No Severity 3 rule violations found."
           }
-
-          Write-Host "`n🧾 Summary of all detected rules:"
-          $summary | Sort-Object -Unique | ForEach-Object { Write-Host $_ }
         shell: pwsh
 
       - name: Upload BPA result into a .txt file
