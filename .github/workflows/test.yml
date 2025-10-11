@@ -125,6 +125,7 @@ jobs:
           if-no-files-found: error
 
   # Step 3: Deploy to Fabric
+  # Step 3: Deploy to Fabric
   Deploy_to_Fabric:
     needs: Install_TabularEditor_and_run_BPA
     runs-on: windows-latest
@@ -134,7 +135,8 @@ jobs:
 
       - name: Install PowerShell module for Fabric deployment
         run: |
-          Install-Module -Name Microsoft.PowerBI.PowerShell -Force -Scope CurrentUser
+          # Install all PowerBI modules
+          Install-Module -Name MicrosoftPowerBIMgmt -Force -Scope CurrentUser
         shell: pwsh
 
       - name: Deploy to Fabric workspace
@@ -144,6 +146,9 @@ jobs:
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           DEV_WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
         run: |
+          # Import module explicitly
+          Import-Module MicrosoftPowerBIMgmt
+
           Write-Host "Authenticating to Azure..."
           Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $env:AZURE_TENANT_ID `
             -ClientId $env:AZURE_CLIENT_ID -ClientSecret $env:AZURE_CLIENT_SECRET
