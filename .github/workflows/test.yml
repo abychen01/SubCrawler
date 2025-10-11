@@ -195,12 +195,13 @@ jobs:
           Write-Host "Deploying model to Fabric workspace via XMLA endpoint: $env:FABRIC_XMLA_ENDPOINT"
 
           # Define and validate the model file path
-          $modelPath = ".\CCDP.SemanticModel\definition\database.tmdl"  # Relative to repo root
+          $modelPath = "CCDP.SemanticModel\definition\database.tmdl"  # Relative to repo root, no leading .\
           $fullModelPath = Join-Path $PWD $modelPath
-          Write-Host "Checking model file at: $fullModelPath"
+          Write-Host "Resolved model file path: $fullModelPath"
           if (-not (Test-Path $fullModelPath)) {
             Write-Error "❌ Model file not found at $fullModelPath"
-            Get-ChildItem -Path $PWD -Recurse  # Debug: List all files to find the correct path
+            Write-Host "Directory contents:"
+            Get-ChildItem -Path $PWD -Recurse | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
 
