@@ -92,15 +92,20 @@ jobs:
               # Only print each violation once, keeping the severity type line
               if (-not $printed.ContainsKey($lineOut)) {
                 $printed[$lineOut] = $true
-                if ($severity -eq 3) {
-                  Write-Host "❌ $lineOut"
-                  $severity3Found = $true
-                } elseif ($severity -eq 2) {
-                  Write-Warning "⚠️ $lineOut"
-                } elseif ($severity -eq 1) {
-                  Write-Host "ℹ️ $lineOut"
-                } else {
-                  Write-Host "❔ $lineOut"
+                switch ($severity) {
+                  3 {
+                    Write-Host "❌ $lineOut" -ForegroundColor Red
+                    $severity3Found = $true
+                  }
+                  2 {
+                    Write-Warning "⚠️ $lineOut"
+                  }
+                  1 {
+                    Write-Host "ℹ️ $lineOut" -ForegroundColor Blue
+                  }
+                  default {
+                    Write-Host "❔ $lineOut" -ForegroundColor DarkGray
+                  }
                 }
               }
             }
