@@ -124,11 +124,11 @@ jobs:
           path: ./BPA_output.txt
           if-no-files-found: error
 
-  # Step 3: Deploy to Fabric (Fixed).
+    # Step 3: Deploy to Fabric
   Deploy_to_Fabric:
     needs: 
       - Install_TabularEditor_and_run_BPA
-      - Get_download_URL_for_Tabular_Editor  # Add explicit dependency
+      - Get_download_URL_for_Tabular_Editor
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -149,7 +149,7 @@ jobs:
             Write-Error "Failed to unzip TabularEditor.zip."
             exit 1
           }
-        shell: pwsh  # Use PowerShell for better error handling on Windows
+        shell: pwsh
 
       - name: Install PowerShell module for Fabric deployment
         run: |
@@ -178,18 +178,29 @@ jobs:
             exit 1
           }
 
-          # Verify authentication by getting current account info
-          $account = Get-PowerBIWorkspace -Scope Organization
-          Write-Host "✅ Connected as: $($account | Select-Object -First 1 | ForEach-Object { $_.Name })"
+          # Verify workspace access
+          Write-Host "Checking workspace access for DEV_WORKSPACE_ID: $env:DEV_WORKSPACE_ID"
+          try {
+            $workspace = Get-PowerBIWorkspace -Id $env:DEV_WORKSPACE_ID -ErrorAction Stop
+            Write-Host "✅ Connected to workspace: $($workspace.Name)"
+          } catch {
+            Write-Warning "⚠️ Failed to verify workspace access: $($_.Exception.Message). Proceeding with deployment."
+          }
 
-          # Deploy using Tabular Editor (handles TMDL natively via XMLA endpoint)
+          # Validate XMLA endpoint
+          if (-not $env:FABRIC_XMLA_ENDPOINT) {
+            Write-Error "❌ FABRIC_XMLA_ENDPOINT is not set. Please configure it in GitHub repository variables."
+            exit 1
+          }
           Write-Host "Deploying model to Fabric workspace via XMLA endpoint: $env:FABRIC_XMLA_ENDPOINT"
+
+          # Deploy using Tabular Editor
           $deployArgs = @(
             "`"$PWD/CCDP.SemanticModel/definition/database.tmdl`"",
             "-D",
             "`"$env:FABRIC_XMLA_ENDPOINT`"",
             "-S",
-            "CreateOrOverwrite"  # Overwrite if exists
+            "CreateOrOverwrite"
           )
           & ./"TabularEditor.exe" @deployArgs
           if ($LASTEXITCODE -ne 0) {
