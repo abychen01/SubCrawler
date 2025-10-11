@@ -10,10 +10,7 @@ table submissions
 			    var counts = 
 			        CALCULATE(
 			                [s_total_count],
-			                FILTER(
-			                    submissions,
-			                    submissions[time_est] > NOW() - 1
-			                )
+			                submissions[time_est] > NOW() - 1
 			        )
 			    RETURN
 			        IF(
@@ -143,14 +140,15 @@ table submissions
 		annotation SummarizationSetBy = Automatic
 
 	column upvote_ratio
-		dataType: double
+		dataType: decimal
+		formatString: 0.00
 		lineageTag: df656cb0-33e5-48f2-ad04-097e579fe32b
 		summarizeBy: none
 		sourceColumn: upvote_ratio
 
-		annotation SummarizationSetBy = User
+		changedProperty = DataType
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation SummarizationSetBy = User
 
 	column URL
 		dataType: string
@@ -171,14 +169,17 @@ table submissions
 		annotation SummarizationSetBy = Automatic
 
 	column title_sentiment
-		dataType: double
+		dataType: decimal
+		formatString: "£"#,0.00;-"£"#,0.00;"£"#,0.00
 		lineageTag: e1a4dd2a-f3bd-4923-ae44-57c50bf9135e
 		summarizeBy: none
 		sourceColumn: title_sentiment
 
+		changedProperty = DataType
+
 		annotation SummarizationSetBy = User
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation PBI_FormatHint = {"currencyCulture":"en-GB"}
 
 	partition submissions = m
 		mode: import

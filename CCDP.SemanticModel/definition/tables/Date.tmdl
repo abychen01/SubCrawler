@@ -24,40 +24,48 @@ table Date
 		annotation SummarizationSetBy = User
 
 	column Quarter
-		dataType: double
+		dataType: int64
 		lineageTag: 3b781d9b-4fd2-40ce-ba5c-7825dee28039
 		summarizeBy: none
 		sourceColumn: Quarter
+
+		changedProperty = DataType
 
 		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column Month
-		dataType: double
+		dataType: int64
 		lineageTag: 8e2e77fb-c3c9-49aa-861f-26f214850414
 		summarizeBy: none
 		sourceColumn: Month
+
+		changedProperty = DataType
 
 		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column 'Week of year'
-		dataType: double
+		dataType: int64
 		lineageTag: d466bc7a-d062-4b98-aa5f-6d1bd25df2d1
 		summarizeBy: none
 		sourceColumn: Week of year
+
+		changedProperty = DataType
 
 		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column Day
-		dataType: double
+		dataType: int64
 		lineageTag: b9f069e1-a711-434a-83af-009e973e35f2
 		summarizeBy: none
 		sourceColumn: Day
+
+		changedProperty = DataType
 
 		annotation SummarizationSetBy = User
 
