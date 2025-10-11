@@ -121,10 +121,10 @@ table submissions
 		dataType: int64
 		formatString: 0
 		lineageTag: f0c37889-a382-40d5-80e3-7d72e649a3f7
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Comments
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 	column Self_text
 		dataType: string
@@ -145,10 +145,10 @@ table submissions
 	column upvote_ratio
 		dataType: double
 		lineageTag: df656cb0-33e5-48f2-ad04-097e579fe32b
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: upvote_ratio
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
@@ -173,10 +173,10 @@ table submissions
 	column title_sentiment
 		dataType: double
 		lineageTag: e1a4dd2a-f3bd-4923-ae44-57c50bf9135e
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: title_sentiment
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 

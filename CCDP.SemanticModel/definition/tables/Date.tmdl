@@ -18,48 +18,48 @@ table Date
 		dataType: int64
 		formatString: 0
 		lineageTag: 37c23f0d-4f43-412e-bb43-0c64bbcfbb6f
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Year
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 	column Quarter
 		dataType: double
 		lineageTag: 3b781d9b-4fd2-40ce-ba5c-7825dee28039
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Quarter
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column Month
 		dataType: double
 		lineageTag: 8e2e77fb-c3c9-49aa-861f-26f214850414
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Month
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column 'Week of year'
 		dataType: double
 		lineageTag: d466bc7a-d062-4b98-aa5f-6d1bd25df2d1
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Week of year
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column Day
 		dataType: double
 		lineageTag: b9f069e1-a711-434a-83af-009e973e35f2
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Day
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 

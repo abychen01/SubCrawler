@@ -116,10 +116,10 @@ table comments
 		dataType: int64
 		formatString: 0
 		lineageTag: 437b3c02-1530-4e0f-9206-063588e21bfa
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: score
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 	column time_utc
 		dataType: string
@@ -151,12 +151,12 @@ table comments
 		dataType: decimal
 		formatString: "£"#,0.00;-"£"#,0.00;"£"#,0.00
 		lineageTag: f326491f-d017-4824-985b-867a22af655b
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: comment_sentiment
 
 		changedProperty = DataType
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"currencyCulture":"en-GB"}
 
