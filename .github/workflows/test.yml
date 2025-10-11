@@ -124,7 +124,7 @@ jobs:
           path: ./BPA_output.txt
           if-no-files-found: error
 
-  # Step 3: Deploy to Fabric (Fixed)
+  # Step 3: Deploy to Fabric (Fixed).
   Deploy_to_Fabric:
     needs: 
       - Install_TabularEditor_and_run_BPA
