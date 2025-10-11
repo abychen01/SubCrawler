@@ -3,7 +3,7 @@ name: CI
 # Trigger this workflow manually via GitHub Actions UI
 on:
   push:
-    branches: [main]
+    branches: [main, test]
   pull_request:
     branches: [main]
 
@@ -64,16 +64,63 @@ jobs:
         uses: actions/checkout@v3  # Ensures source code is available
 
       - name: Install Tabular Editor
-        # Download the Tabular Editor zip using the URL from the previous job
         run: |
           curl -L ${{ needs.Get_download_URL_for_Tabular_Editor.outputs.download_url }} -o TabularEditor.zip
           unzip TabularEditor.zip
                  
       - name: Run Tabular Editor and the BPA against your semantic model
-       # Execute the BPA using command-line arguments
         run: |
           ./TabularEditor.exe "CCDP.SemanticModel/definition/database.tmdl" -A "BPARules.json" `
           | Tee-Object -FilePath "./BPA_output.txt" 
+        shell: pwsh
+          
+      - name: Check BPA severity levels and fail only on severity 3
+        run: |
+          Write-Host "🔍 Checking BPA output for rule severities..."
+          $content = Get-Content "./BPA_output.txt"
+
+          # Find all Severity 3, 2, and 1 rule blocks with context (same display style as your BPA output)
+          $severity3 = $content | Select-String -Pattern "Severity\s*3" -Context 4,4
+          $severity2 = $content | Select-String -Pattern "Severity\s*2" -Context 4,4
+          $severity1 = $content | Select-String -Pattern "Severity\s*1" -Context 4,4
+
+          if ($severity3) {
+            Write-Host ""
+            Write-Host "❌ Found Severity 3 rule violations (these will fail the pipeline):"
+            Write-Host "==============================================================="
+            $severity3 | ForEach-Object {
+              Write-Host "---------------------------------------------------------------"
+              $_.Context.PreContext | ForEach-Object { Write-Host $_ }
+              Write-Host $_.Line
+              $_.Context.PostContext | ForEach-Object { Write-Host $_ }
+            }
+            exit 1
+          } else {
+            Write-Host "✅ No Severity 3 rule violations found."
+          }
+
+          if ($severity2) {
+            Write-Warning "⚠️ Severity 2 warnings detected (non-blocking):"
+            $severity2 | ForEach-Object {
+              Write-Host "---------------------------------------------------------------"
+              $_.Context.PreContext | ForEach-Object { Write-Host $_ }
+              Write-Host $_.Line
+              $_.Context.PostContext | ForEach-Object { Write-Host $_ }
+            }
+          }
+
+          if ($severity1) {
+            Write-Warning "ℹ️ Severity 1 informational messages detected:"
+            $severity1 | ForEach-Object {
+              Write-Host "---------------------------------------------------------------"
+              $_.Context.PreContext | ForEach-Object { Write-Host $_ }
+              Write-Host $_.Line
+              $_.Context.PostContext | ForEach-Object { Write-Host $_ }
+            }
+          }
+
+          Write-Host "BPA rule scan complete."
+        shell: pwsh
           
       - name: Upload BPA result into a .txt file
         uses: actions/upload-artifact@v4
