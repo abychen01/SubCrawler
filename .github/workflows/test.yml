@@ -2,7 +2,7 @@ name: CI
 
 # Trigger workflow on push or PR
 on:
-  push:
+  push:           # runs on push to any branch
   pull_request:
     branches: [main]
 
@@ -78,6 +78,7 @@ jobs:
 
           $severity3Found = $false
           $summary = @()
+          $printed = @{}
 
           foreach ($v in $violations) {
             if ($v -match 'violates rule "(.*)"') {
@@ -88,15 +89,19 @@ jobs:
               $lineOut = "$v  -->  (Severity: $severity)"
               $summary += $lineOut
 
-              if ($severity -eq 3) {
-                Write-Host "❌ $lineOut"
-                $severity3Found = $true
-              } elseif ($severity -eq 2) {
-                Write-Warning "⚠️ $lineOut"
-              } elseif ($severity -eq 1) {
-                Write-Host "ℹ️ $lineOut"
-              } else {
-                Write-Host "❔ $lineOut"
+              # Only print each violation once, keeping the severity type line
+              if (-not $printed.ContainsKey($lineOut)) {
+                $printed[$lineOut] = $true
+                if ($severity -eq 3) {
+                  Write-Host "❌ $lineOut"
+                  $severity3Found = $true
+                } elseif ($severity -eq 2) {
+                  Write-Warning "⚠️ $lineOut"
+                } elseif ($severity -eq 1) {
+                  Write-Host "ℹ️ $lineOut"
+                } else {
+                  Write-Host "❔ $lineOut"
+                }
               }
             }
           }
@@ -111,7 +116,7 @@ jobs:
           }
 
           Write-Host "`n🧾 Summary of all detected rules:"
-          $summary | ForEach-Object { Write-Host $_ }
+          $summary | Sort-Object -Unique | ForEach-Object { Write-Host $_ }
         shell: pwsh
 
       - name: Upload BPA result into a .txt file
