@@ -9,7 +9,7 @@ table submissions
 			
 			    var counts = 
 			        CALCULATE(
-			                submissions[s_total_count],
+			                [s_total_count],
 			                FILTER(
 			                    submissions,
 			                    submissions[time_est] > NOW() - 1
@@ -82,9 +82,8 @@ table submissions
 		lineageTag: 24bafd54-a956-450d-bdc3-c67004df53e5
 
 	measure test = DIVIDE([total_count], [s_total_count])
+		formatString: #,0.00
 		lineageTag: d9fa46dd-a7cb-441d-ba68-792ce4806505
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column subreddit_name
 		dataType: string
