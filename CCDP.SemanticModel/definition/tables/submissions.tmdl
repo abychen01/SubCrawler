@@ -9,7 +9,7 @@ table submissions
 			
 			    var counts = 
 			        CALCULATE(
-			                submissions[s_total_count],
+			                [s_total_count],
 			                FILTER(
 			                    submissions,
 			                    submissions[time_est] > NOW() - 1
