@@ -194,15 +194,19 @@ jobs:
           }
           Write-Host "Deploying model to Fabric workspace via XMLA endpoint: $env:FABRIC_XMLA_ENDPOINT"
 
-          # Deploy semantic model
-          $modelPath = "$PWD\CCDP.SemanticModel\definition\database.tmdl"
-          Write-Host "Checking model file at: $modelPath"
-          if (-not (Test-Path $modelPath)) {
-            Write-Error "❌ Model file not found at $modelPath"
+          # Define and validate the model file path
+          $modelPath = ".\CCDP.SemanticModel\definition\database.tmdl"  # Relative to repo root
+          $fullModelPath = Join-Path $PWD $modelPath
+          Write-Host "Checking model file at: $fullModelPath"
+          if (-not (Test-Path $fullModelPath)) {
+            Write-Error "❌ Model file not found at $fullModelPath"
+            Get-ChildItem -Path $PWD -Recurse  # Debug: List all files to find the correct path
             exit 1
           }
+
+          # Deploy using Tabular Editor with detailed output
           $deployArgs = @(
-            "`"$modelPath`"",
+            "`"$fullModelPath`"",
             "-D",
             "`"$env:FABRIC_XMLA_ENDPOINT`"",
             "-S",
@@ -216,42 +220,4 @@ jobs:
             exit 1
           }
           Write-Host "✅ Model deployment successful."
-
-          # Build and deploy Power BI report from .pbip
-          $pbipPath = "$PWD\MyReport.pbip"  # Adjust to your .pbip folder name
-          $pbixOutput = "$PWD\output.pbix"
-          Write-Host "Checking .pbip project at: $pbipPath"
-          if (-not (Test-Path $pbipPath)) {
-            Write-Error "❌ .pbip project not found at $pbipPath"
-            exit 1
-          }
-
-          # Install Power BI CLI (if not already installed)
-          Write-Host "Installing Power BI CLI..."
-          npm install -g powerbi-cli
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "❌ Failed to install Power BI CLI"
-            exit 1
-          }
-
-          # Build .pbip to .pbix
-          Write-Host "Building .pbip to $pbixOutput..."
-          pbip build --projectDir "$pbipPath" --output "$pbixOutput"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "❌ Failed to build .pbip to .pbix"
-            exit 1
-          }
-
-          # Publish .pbix to workspace
-          Write-Host "Publishing report to workspace..."
-          try {
-            Publish-PowerBIReport -Path $pbixOutput -WorkspaceId $env:DEV_WORKSPACE_ID -ConflictAction CreateOrOverwrite -ErrorAction Stop
-            Write-Host "✅ Report published successfully."
-          } catch {
-            Write-Error "❌ Report publishing failed: $($_.Exception.Message)"
-            exit 1
-          }
-
-          # Clean up
-          Remove-Item $pbixOutput -Force
         shell: pwsh
