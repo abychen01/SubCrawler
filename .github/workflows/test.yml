@@ -3,7 +3,7 @@ name: CI
 # Trigger workflow on push or PR
 on:
   push:           
-    branches: [main]
+    branches: [feature/CD]
   pull_request:
     branches: [main]
 
@@ -42,7 +42,6 @@ jobs:
           fi
         shell: bash
 
-
   # Step 2: Install Tabular Editor and run BPA
   Install_TabularEditor_and_run_BPA:
     needs: Get_download_URL_for_Tabular_Editor
@@ -59,7 +58,6 @@ jobs:
       - name: Run Tabular Editor and save BPA output
         continue-on-error: true
         run: |
-          # Only save BPA output to file, don't print to console
           ./TabularEditor.exe "CCDP.SemanticModel/definition/database.tmdl" -A "BPARules.json" `
           | Out-File -FilePath "./BPA_output.txt" -Encoding utf8
         shell: pwsh
@@ -70,13 +68,11 @@ jobs:
           $bpaContent = Get-Content "./BPA_output.txt"
           $rulesJson = Get-Content "BPARules.json" | ConvertFrom-Json
 
-          # Build dictionary of rule name -> severity
           $ruleMap = @{}
           foreach ($r in $rulesJson) {
             $ruleMap[$r.Name] = $r.Severity
           }
 
-          # Extract all violation lines
           $violations = $bpaContent | Where-Object { $_ -match "violates rule" }
 
           $severity3Found = $false
@@ -90,7 +86,6 @@ jobs:
 
               $lineOut = "$v  -->  (Severity: $severity)"
 
-              # Only print each violation once, keeping the severity type line
               if (-not $printed.ContainsKey($lineOut)) {
                 $printed[$lineOut] = $true
                 switch ($severity) {
@@ -128,3 +123,31 @@ jobs:
           name: BPA_Result
           path: ./BPA_output.txt
           if-no-files-found: error
+
+  # Step 3: Deploy to Fabric
+  Deploy_to_Fabric:
+    needs: Install_TabularEditor_and_run_BPA
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install PowerShell module for Fabric deployment
+        run: |
+          Install-Module -Name Microsoft.PowerBI.PowerShell -Force -Scope CurrentUser
+        shell: pwsh
+
+      - name: Deploy to Fabric workspace
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          DEV_WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
+        run: |
+          Write-Host "Authenticating to Azure..."
+          Connect-PowerBIServiceAccount -ServicePrincipal -Tenant $env:AZURE_TENANT_ID `
+            -ClientId $env:AZURE_CLIENT_ID -ClientSecret $env:AZURE_CLIENT_SECRET
+
+          Write-Host "Deploying model to Fabric workspace $env:DEV_WORKSPACE_ID..."
+          Import-PowerBIDataset -Path "./CCDP.SemanticModel/definition/database.tmdl" -WorkspaceId $env:DEV_WORKSPACE_ID -ConflictAction CreateOrOverwrite
+        shell: pwsh
