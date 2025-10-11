@@ -3,7 +3,6 @@ name: CI
 # Trigger this workflow manually via GitHub Actions UI
 on:
   push:
-    branches: [main]
   pull_request:
     branches: [main]
 
