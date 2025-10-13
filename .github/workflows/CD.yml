@@ -25,10 +25,12 @@ jobs:
           python-version: "3.12"
 
       # 3️⃣ Install Microsoft Fabric CLI
-      - name: Install Fabric CLI
+      - name: Install Microsoft Fabric CLI
         run: |
           python -m pip install --upgrade pip
           pip install ms-fabric-cli
+          echo "Adding Fabric CLI to PATH..."
+          echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
 
       # 4️⃣ Authenticate to Microsoft Fabric
       - name: Authenticate to Microsoft Fabric
