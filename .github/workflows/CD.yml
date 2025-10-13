@@ -27,14 +27,23 @@ jobs:
       - name: Install Microsoft Fabric CLI
         run: |
           python -m pip install --upgrade pip
-          pip install ms-fabric-cli
+          pip install microsoft-fabric-cli
+          # Debug: Verify package installation
+          pip show microsoft-fabric-cli || echo "Failed to find microsoft-fabric-cli"
           # Add user-local bin to PATH (for fallback)
           echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
-          # Debug: Verify installation
+          # Debug: Check for fab executable
           FAB_PATH="$(python -m site --user-base)/bin/fab"
           echo "FAB_PATH: $FAB_PATH"
-          $FAB_PATH --version || echo "Failed to run fab --version"
-          which fab || echo "fab not in PATH"
+          if [ -f "$FAB_PATH" ]; then
+            echo "fab found at $FAB_PATH"
+            $FAB_PATH --version
+          else
+            echo "fab not found at $FAB_PATH"
+            ls -la $(python -m site --user-base)/bin/
+            pip list
+            exit 1
+          fi
 
       - name: Authenticate to Microsoft Fabric
         run: |
@@ -49,7 +58,7 @@ jobs:
           FAB_PATH="$(python -m site --user-base)/bin/fab"
           # Deploy PBIP (assumes CCDP.pbip is in repo root)
           $FAB_PATH item publish CCDP.pbip --workspace $WORKSPACE_ID
-          # Deploy SemanticModel (assumes .bim file or similar; adjust path if needed)
+          # Deploy SemanticModel (assumes .bim or dataset; adjust if needed)
           $FAB_PATH item publish CCDP.SemanticModel --workspace $WORKSPACE_ID
-          # Deploy Report (assumes .pbix file; adjust if needed, XMLA for datasets if required)
+          # Deploy Report (assumes .pbix; XMLA for datasets if needed)
           $FAB_PATH item publish CCDP.Report --workspace $WORKSPACE_ID --xmla-endpoint $XMLA_ENDPOINT
