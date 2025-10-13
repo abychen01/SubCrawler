@@ -1,0 +1,65 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - feature/CD
+
+env:
+  FABRIC_WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
+  FABRIC_XMLA_ENDPOINT: ${{ vars.FABRIC_XMLA_ENDPOINT }}
+
+jobs:
+  deploy:
+    name: Deploy to Microsoft Fabric
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout latest code
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3️⃣ Install Microsoft Fabric CLI
+      - name: Install Fabric CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install ms-fabric-cli
+
+      # 4️⃣ Authenticate to Microsoft Fabric
+      - name: Authenticate to Microsoft Fabric
+        env:
+          FABRIC_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          FABRIC_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          FABRIC_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          fabric login --service-principal \
+            --client-id $FABRIC_CLIENT_ID \
+            --client-secret $FABRIC_CLIENT_SECRET \
+            --tenant-id $FABRIC_TENANT_ID
+
+      # 5️⃣ Deploy PBIP, Semantic Model, and Report to Fabric Workspace
+      - name: Deploy to Fabric Workspace
+        run: |
+          echo "🚀 Deploying CCDP assets to Microsoft Fabric workspace..."
+          fabric workspace select $FABRIC_WORKSPACE_ID
+
+          echo "➡️ Deploying CCDP.pbip"
+          fabric item deploy CCDP.pbip --workspace $FABRIC_WORKSPACE_ID --overwrite
+
+          echo "➡️ Deploying CCDP.SemanticModel"
+          fabric item deploy CCDP.SemanticModel --workspace $FABRIC_WORKSPACE_ID --overwrite
+
+          echo "➡️ Deploying CCDP.Report"
+          fabric item deploy CCDP.Report --workspace $FABRIC_WORKSPACE_ID --overwrite
+
+      # 6️⃣ Verify deployment
+      - name: Verify Deployed Items
+        run: |
+          echo "✅ Deployment complete! Listing items in workspace..."
+          fabric item list --workspace $FABRIC_WORKSPACE_ID
