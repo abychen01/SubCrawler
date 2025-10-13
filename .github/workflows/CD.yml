@@ -2,8 +2,7 @@ name: deploy
 
 on:
   push:
-    branches:
-      - feature/CD
+    branches: [feature/CD]
 
 env:
   FABRIC_WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
