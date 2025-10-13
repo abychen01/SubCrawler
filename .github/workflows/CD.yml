@@ -19,26 +19,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          node-version: '20' # Use a stable Node.js version
+          python-version: "3.12"
 
       - name: Install Microsoft Fabric CLI
         run: |
-          npm install -g @microsoft/fabric-cli
-          echo "Fabric CLI installed at: $(which fabric)"
-          fabric --version || echo "Fabric CLI not found"
+          python -m pip install --upgrade pip
+          pip install ms-fabric-cli
+          # Add user-local bin to PATH (for fallback)
+          echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
+          # Debug: Verify installation
+          FAB_PATH="$(python -m site --user-base)/bin/fab"
+          echo "FAB_PATH: $FAB_PATH"
+          $FAB_PATH --version || echo "Failed to run fab --version"
+          which fab || echo "fab not in PATH"
 
       - name: Authenticate to Microsoft Fabric
         run: |
-          fabric login --service-principal \
+          FAB_PATH="$(python -m site --user-base)/bin/fab"
+          $FAB_PATH auth login --service-principal \
             --client-id $CLIENT_ID \
             --client-secret $CLIENT_SECRET \
             --tenant-id $TENANT_ID
 
       - name: Deploy PBIP, SemanticModel, and Report
         run: |
-          fabric pbip publish CCDP.pbip --workspace-id $WORKSPACE_ID
-          fabric semanticmodel publish CCDP.SemanticModel --workspace-id $WORKSPACE_ID
-          fabric report publish CCDP.Report --workspace-id $WORKSPACE_ID --xmla-endpoint $XMLA_ENDPOINT
+          FAB_PATH="$(python -m site --user-base)/bin/fab"
+          # Deploy PBIP (assumes CCDP.pbip is in repo root)
+          $FAB_PATH item publish CCDP.pbip --workspace $WORKSPACE_ID
+          # Deploy SemanticModel (assumes .bim file or similar; adjust path if needed)
+          $FAB_PATH item publish CCDP.SemanticModel --workspace $WORKSPACE_ID
+          # Deploy Report (assumes .pbix file; adjust if needed, XMLA for datasets if required)
+          $FAB_PATH item publish CCDP.Report --workspace $WORKSPACE_ID --xmla-endpoint $XMLA_ENDPOINT
