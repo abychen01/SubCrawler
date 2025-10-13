@@ -1,64 +1,99 @@
-name: deploy
+name: Power BI CI/CD Sync
 
 on:
   push:
-    branches: [feature/CD]
+    branches:
+      - feature/CD
+
+env:
+  WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
 
 jobs:
-  deploy:
+  sync-workspace:
     runs-on: ubuntu-latest
-
-    env:
-      WORKSPACE_ID: ${{ vars.DEV_WORKSPACE_ID }}
-      XMLA_ENDPOINT: ${{ vars.FABRIC_XMLA_ENDPOINT }}
-      CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          python-version: "3.12"
+          creds: |
+            {
+              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
+            }
 
-      - name: Install Microsoft Fabric CLI
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Get Fabric Access Token
         run: |
-          python -m pip install --upgrade pip
-          pip install microsoft-fabric-cli
-          # Debug: Verify package installation
-          pip show microsoft-fabric-cli || echo "Failed to find microsoft-fabric-cli"
-          # Add user-local bin to PATH (for fallback)
-          echo "$(python -m site --user-base)/bin" >> $GITHUB_PATH
-          # Debug: Check for fab executable
-          FAB_PATH="$(python -m site --user-base)/bin/fab"
-          echo "FAB_PATH: $FAB_PATH"
-          if [ -f "$FAB_PATH" ]; then
-            echo "fab found at $FAB_PATH"
-            $FAB_PATH --version
+          TOKEN=$(az account get-access-token --resource https://api.fabric.microsoft.com --query accessToken --output tsv)
+          echo "FABRIC_TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Get Workspace Head from Git Status
+        run: |
+          STATUS_URL="https://api.fabric.microsoft.com/v1/workspaces/${{ env.WORKSPACE_ID }}/git/status"
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ env.FABRIC_TOKEN }}" "$STATUS_URL")
+          echo "$RESPONSE"
+          WORKSPACE_HEAD=$(echo "$RESPONSE" | jq -r '.workspaceHead')
+          REMOTE_COMMIT_HASH=$(echo "$RESPONSE" | jq -r '.remoteCommitHash')  # For reference, but we use github.sha
+          echo "WORKSPACE_HEAD=$WORKSPACE_HEAD" >> $GITHUB_ENV
+
+      - name: Update Workspace from Git
+        run: |
+          COMMIT_HASH=${{ github.sha }}
+          UPDATE_URL="https://api.fabric.microsoft.com/v1/workspaces/${{ env.WORKSPACE_ID }}/git/updateFromGit"
+          BODY=$(jq -n \
+            --arg remoteCommitHash "$COMMIT_HASH" \
+            --arg workspaceHead "${{ env.WORKSPACE_HEAD }}" \
+            '{ 
+              remoteCommitHash: $remoteCommitHash, 
+              workspaceHead: $workspaceHead, 
+              conflictResolution: { 
+                conflictResolutionType: "Workspace", 
+                conflictResolutionPolicy: "PreferRemote" 
+              }, 
+              options: { 
+                allowOverrideItems: true 
+              } 
+            }')
+          echo "Request Body: $BODY"
+          
+          # Make the API call and capture headers
+          curl -s -D headers.txt -H "Authorization: Bearer ${{ env.FABRIC_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY" \
+            -X POST "$UPDATE_URL"
+          
+          # Extract operation ID and retry-after
+          OPERATION_ID=$(grep -i 'x-ms-operation-id' headers.txt | cut -d ' ' -f2 | tr -d '\r')
+          RETRY_AFTER=$(grep -i 'Retry-After' headers.txt | cut -d ' ' -f2 | tr -d '\r')
+          echo "Operation ID: $OPERATION_ID"
+          echo "Retry-After: $RETRY_AFTER"
+          
+          # Poll for operation status
+          if [ -n "$OPERATION_ID" ]; then
+            while true; do
+              STATUS_URL="https://api.fabric.microsoft.com/v1/operations/$OPERATION_ID"
+              STATUS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ env.FABRIC_TOKEN }}" "$STATUS_URL")
+              STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.status')
+              echo "Operation Status: $STATUS"
+              if [[ "$STATUS" != "NotStarted" && "$STATUS" != "Running" ]]; then
+                if [ "$STATUS" = "Succeeded" ]; then
+                  echo "Update succeeded."
+                else
+                  echo "Update failed: $STATUS_RESPONSE"
+                  exit 1
+                fi
+                break
+              fi
+              sleep "${RETRY_AFTER:-30}"
+            done
           else
-            echo "fab not found at $FAB_PATH"
-            ls -la $(python -m site --user-base)/bin/
-            pip list
-            exit 1
+            echo "No operation ID returned; assuming synchronous success."
           fi
-
-      - name: Authenticate to Microsoft Fabric
-        run: |
-          FAB_PATH="$(python -m site --user-base)/bin/fab"
-          $FAB_PATH auth login --service-principal \
-            --client-id $CLIENT_ID \
-            --client-secret $CLIENT_SECRET \
-            --tenant-id $TENANT_ID
-
-      - name: Deploy PBIP, SemanticModel, and Report
-        run: |
-          FAB_PATH="$(python -m site --user-base)/bin/fab"
-          # Deploy PBIP (assumes CCDP.pbip is in repo root)
-          $FAB_PATH item publish CCDP.pbip --workspace $WORKSPACE_ID
-          # Deploy SemanticModel (assumes .bim or dataset; adjust if needed)
-          $FAB_PATH item publish CCDP.SemanticModel --workspace $WORKSPACE_ID
-          # Deploy Report (assumes .pbix; XMLA for datasets if needed)
-          $FAB_PATH item publish CCDP.Report --workspace $WORKSPACE_ID --xmla-endpoint $XMLA_ENDPOINT
