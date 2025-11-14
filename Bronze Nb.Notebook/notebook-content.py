@@ -24,10 +24,17 @@
 # META   }
 # META }
 
-# MARKDOWN ********************
+# CELL ********************
 
-# %pip install google-auth-oauthlib google-api-python-client
-# pip install praw 
+%pip install google-auth-oauthlib google-api-python-client
+pip install praw 
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
 
 # MARKDOWN ********************
 
