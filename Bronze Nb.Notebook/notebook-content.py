@@ -8,12 +8,12 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "0bcf40e1-5936-4fdc-af5b-c02a4546065b",
+# META       "default_lakehouse": "14de013d-3e56-4849-9b66-7fffc391905c",
 # META       "default_lakehouse_name": "Bronze_LH",
-# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
+# META       "default_lakehouse_workspace_id": "306a4bc8-b6a0-47ec-9db2-ac7425606782",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "0bcf40e1-5936-4fdc-af5b-c02a4546065b"
+# META           "id": "14de013d-3e56-4849-9b66-7fffc391905c"
 # META         }
 # META       ]
 # META     },
@@ -24,17 +24,10 @@
 # META   }
 # META }
 
-# CELL ********************
+# MARKDOWN ********************
 
-%pip install google-auth-oauthlib google-api-python-client
-pip install praw 
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
+# %pip install google-auth-oauthlib google-api-python-client
+# pip install praw 
 
 # MARKDOWN ********************
 
