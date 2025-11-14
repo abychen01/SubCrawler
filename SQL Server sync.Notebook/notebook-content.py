@@ -8,24 +8,30 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "9e211a6b-12cf-4545-82bb-64c49e7d785e",
-# META       "default_lakehouse_name": "Gold_LH",
-# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
+# META       "default_lakehouse": "14de013d-3e56-4849-9b66-7fffc391905c",
+# META       "default_lakehouse_name": "Bronze_LH",
+# META       "default_lakehouse_workspace_id": "306a4bc8-b6a0-47ec-9db2-ac7425606782",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "0bcf40e1-5936-4fdc-af5b-c02a4546065b"
+# META           "id": "fcacb96a-4fd9-413a-af07-7e7b84dfee79"
 # META         },
 # META         {
-# META           "id": "9e211a6b-12cf-4545-82bb-64c49e7d785e"
+# META           "id": "14de013d-3e56-4849-9b66-7fffc391905c"
 # META         }
 # META       ]
 # META     }
 # META   }
 # META }
 
+# MARKDOWN ********************
+
+# Imports
+
 # CELL ********************
 
-import pyodbc
+import pyodbc, os
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
 # METADATA ********************
 
@@ -34,10 +40,38 @@ import pyodbc
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# Vault defs
+
 # CELL ********************
 
-df2 = spark.read.parquet("Files/creds")
-password = df2.collect()[0]["password"]
+df_creds = spark.read.parquet('Files/creds')
+
+os.environ["AZURE_CLIENT_ID"] = df_creds.collect()[0]["AZURE_CLIENT_ID"]
+os.environ["AZURE_TENANT_ID"] = df_creds.collect()[0]["AZURE_TENANT_ID"]
+os.environ["AZURE_CLIENT_SECRET"] = df_creds.collect()[0]["AZURE_CLIENT_SECRET"]
+
+
+vault_url = "https://vaultforfabric.vault.azure.net/"
+credential = DefaultAzureCredential()
+client = SecretClient(vault_url=vault_url, credential=credential)
+
+password = client.get_secret("sql-server-password").value
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# DB defs
+
+# CELL ********************
+
 
 table_name = ["submissions","comments"]
 
@@ -84,8 +118,14 @@ conn_str = (
 
 # META {
 # META   "language": "python",
-# META   "language_group": "synapse_pyspark"
+# META   "language_group": "synapse_pyspark",
+# META   "frozen": false,
+# META   "editable": true
 # META }
+
+# MARKDOWN ********************
+
+# DB and table check
 
 # CELL ********************
 
@@ -166,6 +206,10 @@ for table in table_name:
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# Write
+
 # CELL ********************
 
 
@@ -196,6 +240,10 @@ for table in table_name:
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# MARKDOWN ********************
+
+# #### Testing
 
 # CELL ********************
 
