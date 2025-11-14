@@ -8,12 +8,15 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "0bcf40e1-5936-4fdc-af5b-c02a4546065b",
+# META       "default_lakehouse": "14de013d-3e56-4849-9b66-7fffc391905c",
 # META       "default_lakehouse_name": "Bronze_LH",
-# META       "default_lakehouse_workspace_id": "2a8af919-0041-46ee-b6c9-e0fcee3bb1c7",
+# META       "default_lakehouse_workspace_id": "306a4bc8-b6a0-47ec-9db2-ac7425606782",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "0bcf40e1-5936-4fdc-af5b-c02a4546065b"
+# META           "id": "fcacb96a-4fd9-413a-af07-7e7b84dfee79"
+# META         },
+# META         {
+# META           "id": "14de013d-3e56-4849-9b66-7fffc391905c"
 # META         }
 # META       ]
 # META     },
@@ -41,27 +44,13 @@ updates = ""
 
 # CELL ********************
 
-'''
-
-same_sub = True
-same_key = False
-updates = False
-
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 from mailjet_rest import Client
 from delta.tables import DeltaTable
 from pyspark.sql.functions import col,desc
-import pprint
+import pprint, os
+
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
 # METADATA ********************
 
@@ -74,6 +63,30 @@ import pprint
 
 post_count = 0
 comment_count = 0
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+df_creds = spark.read.parquet('Files/creds')
+
+os.environ["AZURE_CLIENT_ID"] = df_creds.collect()[0]["AZURE_CLIENT_ID"]
+os.environ["AZURE_TENANT_ID"] = df_creds.collect()[0]["AZURE_TENANT_ID"]
+os.environ["AZURE_CLIENT_SECRET"] = df_creds.collect()[0]["AZURE_CLIENT_SECRET"]
+
+
+vault_url = "https://vaultforfabric.vault.azure.net/"
+credential = DefaultAzureCredential()
+client = SecretClient(vault_url=vault_url, credential=credential)
+
+mailjet_api_key = client.get_secret("mailjet-api-key").value
+mailjet_api_secret = client.get_secret("mailjet-api-secret").value
+
 
 # METADATA ********************
 
@@ -148,6 +161,18 @@ else:
 
 # CELL ********************
 
+df_creds = spark.read.parquet('Files/creds')
+display(df_creds)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 #tesing...
 '''
 
@@ -168,8 +193,6 @@ display(df_submissions.history())
 
 # CELL ********************
 
-df_mailjet_creds = spark.read.format("delta").load("Files/mailjet_creds")
-df_mailjet_creds = df_mailjet_creds.collect()[0]
 
 df_email = spark.read.format("csv").load("Files/tmp/email.csv")
 df_email = df_email.collect()[0]
@@ -206,7 +229,7 @@ comments_list_html = "<br>".join(row.comment_body for row in comments_list)
 
 
 
-mailjet = Client(auth=(df_mailjet_creds.api_key, df_mailjet_creds.api_secret), version='v3.1')
+mailjet = Client(auth=(mailjet_api_key, mailjet_api_secret), version='v3.1')
 data = {
   'Messages': [
 				{
