@@ -104,6 +104,10 @@ schema_comments = StructType([
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# Vault def
+
 # CELL ********************
 
 df_creds = spark.read.parquet('Files/creds')
@@ -126,9 +130,9 @@ SERVICE_ACCOUNT_FILE = "/tmp/service_account_creds.json"
 DRIVE_FOLDER_ID = "1VNub-8hZYgBb7Jq4qlUZBUQ7h-dJWuty"  #  Drive folder ID
 
 reddit = praw.Reddit(
-    client_id = df_reddit_creds.reddit_id,
-    client_secret = df_reddit_creds.reddit_secret,
-    user_agent = df_reddit_creds.reddit_user_agent
+    client_id = reddit_id,
+    client_secret = reddit_secret,
+    user_agent = user_agent
 )
 
 
