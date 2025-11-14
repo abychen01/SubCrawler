@@ -166,7 +166,7 @@ with pyodbc.connect(conn_str_master, autocommit=True) as conn:
 
 for table in table_name:
 
-    df = spark.read.table(table)
+    df = spark.read.table(f'Gold_LH.{table}')
     print(f"table is [{table}]")
 
     if table == "submissions":
