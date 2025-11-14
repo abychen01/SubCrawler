@@ -215,7 +215,7 @@ for table in table_name:
 
 for table in table_name:
 
-    df = spark.read.table(table)
+    df = spark.read.table(f'Gold_LH.{table}')
     print(table,' : ',df.count(),'rows')
     
     try:
@@ -248,6 +248,7 @@ for table in table_name:
 # CELL ********************
 
 #testing...
+
 '''
 for table in table_name:
     with pyodbc.connect(conn_str, autocommit=True) as conn:
