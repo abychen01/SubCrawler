@@ -43,11 +43,12 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
 from pyspark.sql.functions import col, desc
-import praw, io, json, time
+import praw, io, json, time, os
 from delta.tables import DeltaTable
 from google.oauth2 import service_account
 
-
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
 # METADATA ********************
 
@@ -105,8 +106,20 @@ schema_comments = StructType([
 
 # CELL ********************
 
-df_reddit_creds = spark.read.format("delta").load("Files/creds")
-df_reddit_creds = df_reddit_creds.collect()[0]
+df_creds = spark.read.parquet('Files/creds')
+
+os.environ["AZURE_CLIENT_ID"] = df_creds.collect()[0]["AZURE_CLIENT_ID"]
+os.environ["AZURE_TENANT_ID"] = df_creds.collect()[0]["AZURE_TENANT_ID"]
+os.environ["AZURE_CLIENT_SECRET"] = df_creds.collect()[0]["AZURE_CLIENT_SECRET"]
+
+
+vault_url = "https://vaultforfabric.vault.azure.net/"
+credential = DefaultAzureCredential()
+client = SecretClient(vault_url=vault_url, credential=credential)
+
+reddit_id = client.get_secret("redditID").value
+reddit_secret = client.get_secret("redditSecret").value
+user_agent = client.get_secret("redditUserAgent").value
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = "/tmp/service_account_creds.json"
@@ -117,6 +130,7 @@ reddit = praw.Reddit(
     client_secret = df_reddit_creds.reddit_secret,
     user_agent = df_reddit_creds.reddit_user_agent
 )
+
 
 b_submissions = "Bronze_LH.submissions"
 b_comments_indirect = "Bronze_LH.comments_indirect"
